@@ -5,23 +5,22 @@ import org.dolicoli.android.golfscoreboardg.R;
 import org.dolicoli.android.golfscoreboardg.data.SingleGameResult;
 import org.dolicoli.android.golfscoreboardg.data.settings.Result;
 import org.dolicoli.android.golfscoreboardg.tasks.CurrentGameQueryTask;
-import org.dolicoli.android.golfscoreboardg.tasks.HistoryQueryTask;
+import org.dolicoli.android.golfscoreboardg.tasks.HistoryGameSettingWithResultQueryTask;
 import org.dolicoli.android.golfscoreboardg.utils.FeeCalculator;
+import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.holoeverywhere.LayoutInflater;
-import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.app.Fragment;
 import org.holoeverywhere.widget.TextView;
 
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
 public class OneGamePlayerRecordSummaryFragment extends Fragment implements
 		OneGamePlayerRecordActivityPage, CurrentGameQueryTask.TaskListener,
-		HistoryQueryTask.TaskListener {
-
-	private int playerId;
+		HistoryGameSettingWithResultQueryTask.TaskListener {
 
 	private TextView[] rankingTitleTextViews;
 	private TextView[] rankingValueTextViews;
@@ -35,20 +34,25 @@ public class OneGamePlayerRecordSummaryFragment extends Fragment implements
 			tripleBogeyValueTextView, quadrupleBogeyValueTextView,
 			overQuintupleBogeyValueTextView;
 
-	private int[] values, sameValues;
-
 	private int primaryTextColor, secondaryTextColor;
 
+	private int[] values, sameValues;
+	private int playerId;
 	private String playDate;
 	private boolean currentGame;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		this.playerId = 0;
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		View view = inflater.inflate(
 				R.layout.onegame_player_record_summary_fragment, null);
-
-		playerId = 0;
 
 		rankingTitleTextViews = new TextView[Constants.MAX_PLAYER_COUNT];
 		rankingTitleTextViews[0] = (TextView) view
@@ -159,16 +163,16 @@ public class OneGamePlayerRecordSummaryFragment extends Fragment implements
 	}
 
 	@Override
-	public void onGameQueryStarted() {
+	public void onCurrentGameQueryStarted() {
 	}
 
 	@Override
-	public void onGameQueryFinished(SingleGameResult gameResult) {
+	public void onCurrentGameQueryFinished(SingleGameResult gameResult) {
 		reloadUI(gameResult);
 	}
 
 	private void reload() {
-		Activity activity = getSupportActivity();
+		FragmentActivity activity = getActivity();
 		if (activity == null)
 			return;
 
@@ -176,13 +180,17 @@ public class OneGamePlayerRecordSummaryFragment extends Fragment implements
 			CurrentGameQueryTask task = new CurrentGameQueryTask(activity, this);
 			task.execute();
 		} else {
-			HistoryQueryTask task = new HistoryQueryTask(activity, this);
-			task.execute(new HistoryQueryTask.QueryParam(playDate));
+			HistoryGameSettingWithResultQueryTask task = new HistoryGameSettingWithResultQueryTask(
+					activity, this);
+			task.execute(new HistoryGameSettingWithResultQueryTask.QueryParam(
+					playDate));
 		}
 	}
 
 	private void reloadUI(SingleGameResult gameResult) {
-		if (getActivity() == null || gameResult == null)
+		FragmentActivity activity = getActivity();
+
+		if (activity == null || gameResult == null)
 			return;
 
 		int playerCount = gameResult.getPlayerCount();
@@ -334,12 +342,10 @@ public class OneGamePlayerRecordSummaryFragment extends Fragment implements
 			}
 		}
 		for (int i = 0; i < Constants.MAX_PLAYER_COUNT; i++) {
-			rankingValueTextViews[i].setText(getString(
-					R.string.fragment_player_record_count_format, values[i]));
-			rankingSameValueTextViews[i]
-					.setText(getString(
-							R.string.fragment_player_record_count_format,
-							sameValues[i]));
+			rankingValueTextViews[i].setText(UIUtil.formatGameCount(activity,
+					values[i]));
+			rankingSameValueTextViews[i].setText(UIUtil.formatGameCount(
+					activity, sameValues[i]));
 
 			if (values[i] >= 1) {
 				rankingValueTextViews[i].setTextColor(primaryTextColor);
@@ -355,48 +361,47 @@ public class OneGamePlayerRecordSummaryFragment extends Fragment implements
 			}
 		}
 
-		feeZeroValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, feeZero));
+		feeZeroValueTextView.setText(UIUtil.formatGameCount(activity, feeZero));
 		if (feeZero > 0) {
 			feeZeroValueTextView.setTextColor(primaryTextColor);
 		} else {
 			feeZeroValueTextView.setText("-");
 			feeZeroValueTextView.setTextColor(secondaryTextColor);
 		}
-		feeUnder1000ValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, feeUnder1000));
+		feeUnder1000ValueTextView.setText(UIUtil.formatGameCount(activity,
+				feeUnder1000));
 		if (feeUnder1000 > 0) {
 			feeUnder1000ValueTextView.setTextColor(primaryTextColor);
 		} else {
 			feeUnder1000ValueTextView.setText("-");
 			feeUnder1000ValueTextView.setTextColor(secondaryTextColor);
 		}
-		feeUnder1500ValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, feeUnder1500));
+		feeUnder1500ValueTextView.setText(UIUtil.formatGameCount(activity,
+				feeUnder1500));
 		if (feeUnder1500 > 0) {
 			feeUnder1500ValueTextView.setTextColor(primaryTextColor);
 		} else {
 			feeUnder1500ValueTextView.setText("-");
 			feeUnder1500ValueTextView.setTextColor(secondaryTextColor);
 		}
-		feeUnder2000ValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, feeUnder2000));
+		feeUnder2000ValueTextView.setText(UIUtil.formatGameCount(activity,
+				feeUnder2000));
 		if (feeUnder2000 > 0) {
 			feeUnder2000ValueTextView.setTextColor(primaryTextColor);
 		} else {
 			feeUnder2000ValueTextView.setText("-");
 			feeUnder2000ValueTextView.setTextColor(secondaryTextColor);
 		}
-		feeUnder2500ValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, feeUnder2500));
+		feeUnder2500ValueTextView.setText(UIUtil.formatGameCount(activity,
+				feeUnder2500));
 		if (feeUnder2500 > 0) {
 			feeUnder2500ValueTextView.setTextColor(primaryTextColor);
 		} else {
 			feeUnder2500ValueTextView.setText("-");
 			feeUnder2500ValueTextView.setTextColor(secondaryTextColor);
 		}
-		feeOver2500ValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, feeOver2500));
+		feeOver2500ValueTextView.setText(UIUtil.formatGameCount(activity,
+				feeOver2500));
 		if (feeOver2500 > 0) {
 			feeOver2500ValueTextView.setTextColor(primaryTextColor);
 		} else {
@@ -404,81 +409,76 @@ public class OneGamePlayerRecordSummaryFragment extends Fragment implements
 			feeOver2500ValueTextView.setTextColor(secondaryTextColor);
 		}
 
-		underCondorValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, underCondor));
+		underCondorValueTextView.setText(UIUtil.formatGameCount(activity,
+				underCondor));
 		if (underCondor > 0) {
 			underCondorValueTextView.setTextColor(primaryTextColor);
 		} else {
 			underCondorValueTextView.setText("-");
 			underCondorValueTextView.setTextColor(secondaryTextColor);
 		}
-		albatrossValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, albatross));
+		albatrossValueTextView.setText(UIUtil.formatGameCount(activity,
+				albatross));
 		if (albatross > 0) {
 			albatrossValueTextView.setTextColor(primaryTextColor);
 		} else {
 			albatrossValueTextView.setText("-");
 			albatrossValueTextView.setTextColor(secondaryTextColor);
 		}
-		eagleValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, eagle));
+		eagleValueTextView.setText(UIUtil.formatGameCount(activity, eagle));
 		if (eagle > 0) {
 			eagleValueTextView.setTextColor(primaryTextColor);
 		} else {
 			eagleValueTextView.setText("-");
 			eagleValueTextView.setTextColor(secondaryTextColor);
 		}
-		birdieValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, birdie));
+		birdieValueTextView.setText(UIUtil.formatGameCount(activity, birdie));
 		if (birdie > 0) {
 			birdieValueTextView.setTextColor(primaryTextColor);
 		} else {
 			birdieValueTextView.setText("-");
 			birdieValueTextView.setTextColor(secondaryTextColor);
 		}
-		parValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, par));
+		parValueTextView.setText(UIUtil.formatGameCount(activity, par));
 		if (par > 0) {
 			parValueTextView.setTextColor(primaryTextColor);
 		} else {
 			parValueTextView.setText("-");
 			parValueTextView.setTextColor(secondaryTextColor);
 		}
-		bogeyValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, bogey));
+		bogeyValueTextView.setText(UIUtil.formatGameCount(activity, bogey));
 		if (bogey > 0) {
 			bogeyValueTextView.setTextColor(primaryTextColor);
 		} else {
 			bogeyValueTextView.setText("-");
 			bogeyValueTextView.setTextColor(secondaryTextColor);
 		}
-		doubleBogeyValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, doubleBogey));
+		doubleBogeyValueTextView.setText(UIUtil.formatGameCount(activity,
+				doubleBogey));
 		if (doubleBogey > 0) {
 			doubleBogeyValueTextView.setTextColor(primaryTextColor);
 		} else {
 			doubleBogeyValueTextView.setText("-");
 			doubleBogeyValueTextView.setTextColor(secondaryTextColor);
 		}
-		tripleBogeyValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, tripleBogey));
+		tripleBogeyValueTextView.setText(UIUtil.formatGameCount(activity,
+				tripleBogey));
 		if (tripleBogey > 0) {
 			tripleBogeyValueTextView.setTextColor(primaryTextColor);
 		} else {
 			tripleBogeyValueTextView.setText("-");
 			tripleBogeyValueTextView.setTextColor(secondaryTextColor);
 		}
-		quadrupleBogeyValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format, quadrupleBogey));
+		quadrupleBogeyValueTextView.setText(UIUtil.formatGameCount(activity,
+				quadrupleBogey));
 		if (quadrupleBogey > 0) {
 			quadrupleBogeyValueTextView.setTextColor(primaryTextColor);
 		} else {
 			quadrupleBogeyValueTextView.setText("-");
 			quadrupleBogeyValueTextView.setTextColor(secondaryTextColor);
 		}
-		overQuintupleBogeyValueTextView.setText(getString(
-				R.string.fragment_player_record_count_format,
-				overQuintupleBogey));
+		overQuintupleBogeyValueTextView.setText(UIUtil.formatGameCount(
+				activity, overQuintupleBogey));
 		if (overQuintupleBogey > 0) {
 			overQuintupleBogeyValueTextView.setTextColor(primaryTextColor);
 		} else {

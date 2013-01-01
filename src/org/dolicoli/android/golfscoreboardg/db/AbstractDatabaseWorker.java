@@ -18,7 +18,7 @@ public abstract class AbstractDatabaseWorker {
 	public AbstractDatabaseWorker open() throws SQLException {
 		if (context == null)
 			return null;
-		
+
 		dbHelper = new DatabaseHelper(context);
 		mDb = dbHelper.getWritableDatabase();
 		return this;

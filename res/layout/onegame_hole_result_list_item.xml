@@ -8,11 +8,6 @@
     android:paddingRight="0dip"
     android:paddingTop="4dip"
     tools:context=".MainActivity" >
-    
-    <!--
-    
-    android:background="?android:attr/activatedBackgroundIndicator" 
-     -->
 
     <TextView
         android:id="@+id/HoleNumberTextView"
@@ -36,7 +31,7 @@
             android:layout_centerVertical="true"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceSmall"
-            android:textColor="?attr/secondaryTextColor1" />
+            android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/Fee1TextView"
@@ -103,7 +98,7 @@
             android:layout_centerVertical="true"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceSmall"
-            android:textColor="?attr/secondaryTextColor1" />
+            android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/Fee2TextView"
@@ -170,7 +165,7 @@
             android:layout_centerVertical="true"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceSmall"
-            android:textColor="?attr/secondaryTextColor1" />
+            android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/Fee3TextView"
@@ -237,7 +232,7 @@
             android:layout_centerVertical="true"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceSmall"
-            android:textColor="?attr/secondaryTextColor1" />
+            android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/Fee4TextView"
@@ -304,7 +299,7 @@
             android:layout_centerVertical="true"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceSmall"
-            android:textColor="?attr/secondaryTextColor1" />
+            android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/Fee5TextView"
@@ -371,7 +366,7 @@
             android:layout_centerVertical="true"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceSmall"
-            android:textColor="?attr/secondaryTextColor1" />
+            android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/Fee6TextView"

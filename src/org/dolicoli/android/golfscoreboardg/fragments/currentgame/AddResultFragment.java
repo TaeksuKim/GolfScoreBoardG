@@ -42,8 +42,7 @@ public class AddResultFragment extends Fragment implements OnClickListener {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.current_game_add_result_fragment,
-				null);
+		View view = inflater.inflate(R.layout.add_result_fragment, null);
 
 		parThreeRadioButton = (RadioButton) view
 				.findViewById(R.id.ParThreeRadioButton);

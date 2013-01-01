@@ -1,96 +1,198 @@
 package org.dolicoli.android.golfscoreboardg.fragments.onegame;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import org.dolicoli.android.golfscoreboardg.Constants;
-import org.dolicoli.android.golfscoreboardg.OneGameActivity;
 import org.dolicoli.android.golfscoreboardg.R;
+import org.dolicoli.android.golfscoreboardg.Reloadable;
 import org.dolicoli.android.golfscoreboardg.data.SingleGameResult;
 import org.dolicoli.android.golfscoreboardg.data.settings.Result;
-import org.dolicoli.android.golfscoreboardg.tasks.HistoryQueryTask;
+import org.dolicoli.android.golfscoreboardg.tasks.CurrentGameQueryTask;
+import org.dolicoli.android.golfscoreboardg.tasks.HistoryGameSettingWithResultQueryTask;
 import org.dolicoli.android.golfscoreboardg.utils.FeeCalculator;
+import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.holoeverywhere.ArrayAdapter;
 import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.app.ListFragment;
-import org.holoeverywhere.util.SparseArray;
-import org.holoeverywhere.widget.TextView;
+import org.holoeverywhere.widget.ListView;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.TypedValue;
+import android.support.v4.app.FragmentActivity;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 
 public class OneGameHoleResultFragment extends ListFragment implements
-		OneGameActivityPage, HistoryQueryTask.TaskListener {
+		Reloadable, OneGameActivityPage, CurrentGameQueryTask.TaskListener,
+		HistoryGameSettingWithResultQueryTask.TaskListener {
+
+	private View gameSettingView;
+	private TextView currentHoleTextView, finalHoleTextView;
+	private TextView sumOfHoleFeeTextView, totalHoleFeeTextView;
+	private TextView sumOfTotalFeeTextView, totalTotalFeeTextView;
 
 	private HoleResultListAdapter adapter;
-	private String playDate;
 
+	private int currentHole;
+	private SingleGameResult gameResult;
+
+	private int mode;
+	private String playDate;
 	private int holeNumber;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		this.mode = MODE_CURRENT;
+		this.playDate = "";
+		this.holeNumber = 0;
+
+		Bundle bundle = null;
+		if (savedInstanceState != null) {
+			bundle = savedInstanceState;
+		} else {
+			bundle = getArguments();
+		}
+		if (bundle != null) {
+			int mode = bundle.getInt(BK_MODE);
+			if (mode == MODE_CURRENT || mode == MODE_HISTORY)
+				this.mode = mode;
+
+			String playDate = bundle.getString(BK_PLAY_DATE);
+			if (playDate != null && !playDate.equals("")) {
+				this.playDate = playDate;
+			}
+
+			int holeNumber = bundle.getInt(BK_HOLE_NUMBER);
+			if (holeNumber > 0 && holeNumber <= 18)
+				this.holeNumber = holeNumber;
+		}
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.onegame_result_fragment, null);
+		View view = inflater.inflate(R.layout.onegame_hole_result_fragment,
+				null);
 
-		adapter = new HoleResultListAdapter(getActivity(),
-				R.layout.onegame_result_list_item);
-		adapter.setNotifyOnChange(false);
-		setListAdapter(adapter);
+		gameSettingView = view.findViewById(R.id.GameSettingView);
+		sumOfHoleFeeTextView = (TextView) view
+				.findViewById(R.id.SumOfHoleFeeTextView);
+		totalHoleFeeTextView = (TextView) view
+				.findViewById(R.id.TotalHoleFeeTextView);
 
-		Intent intent = getActivity().getIntent();
-		playDate = intent.getStringExtra(OneGameActivity.IK_PLAY_DATE);
+		sumOfTotalFeeTextView = (TextView) view
+				.findViewById(R.id.SumOfTotalFeeTextView);
+		totalTotalFeeTextView = (TextView) view
+				.findViewById(R.id.TotalTotalFeeTextView);
 
-		holeNumber = 0;
+		currentHoleTextView = (TextView) view
+				.findViewById(R.id.CurrentHoleTextView);
+		finalHoleTextView = (TextView) view
+				.findViewById(R.id.FinalHoleTextView);
 
 		return view;
 	}
 
 	@Override
-	public void onResume() {
-		super.onResume();
-		reload();
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+
+		adapter = new HoleResultListAdapter(getActivity(),
+				R.layout.onegame_hole_result_list_item);
+		adapter.setNotifyOnChange(false);
+		setListAdapter(adapter);
+
+		if (mode == MODE_CURRENT) {
+			gameSettingView.setVisibility(View.VISIBLE);
+
+			getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+			setHasOptionsMenu(true);
+		} else {
+			gameSettingView.setVisibility(View.GONE);
+		}
+		reload(false);
+	}
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+
+		if (mode == MODE_CURRENT) {
+			inflater.inflate(R.menu.current_game, menu);
+		}
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		Activity activity = getSupportActivity();
+		if (activity == null)
+			return false;
+		return activity.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public void reload(boolean clean) {
+		FragmentActivity activity = getActivity();
+
+		if (activity == null)
+			return;
+
+		if (mode == MODE_CURRENT) {
+			CurrentGameQueryTask task = new CurrentGameQueryTask(activity, this);
+			task.execute();
+		} else if (mode == MODE_HISTORY) {
+			HistoryGameSettingWithResultQueryTask task = new HistoryGameSettingWithResultQueryTask(
+					getActivity(), this);
+			task.execute(new HistoryGameSettingWithResultQueryTask.QueryParam(
+					playDate, holeNumber));
+		}
+	}
+
+	@Override
+	public void onCurrentGameQueryStarted() {
+	}
+
+	@Override
+	public void onCurrentGameQueryFinished(SingleGameResult gameResult) {
+		this.gameResult = gameResult;
+		reloadUI();
 	}
 
 	@Override
 	public void setHoleNumber(int holeNumber) {
 		this.holeNumber = holeNumber;
-		reload();
 	}
 
-	@Override
-	public void onGameQueryStarted() {
-	}
-
-	@Override
-	public void onGameQueryFinished(SingleGameResult gameResult) {
-		reloadUI(gameResult);
-	}
-
-	private void reload() {
-		if (getActivity() == null || playDate == null)
+	private void reloadUI() {
+		if (getActivity() == null || gameResult == null)
 			return;
 
-		HistoryQueryTask task = new HistoryQueryTask(getActivity(), this);
-		task.execute(new HistoryQueryTask.QueryParam(playDate, holeNumber));
-	}
-
-	private void reloadUI(SingleGameResult gameResult) {
-		Activity activity = getSupportActivity();
-		if (activity == null || gameResult == null)
-			return;
-
+		int holeCount = gameResult.getHoleCount();
 		int playerCount = gameResult.getPlayerCount();
 
 		SparseArray<HoleResult> holeResultArray = new SparseArray<HoleResult>();
+		ArrayList<PlayerScore> playerScoreList = new ArrayList<PlayerScore>();
+		for (int playerId = 0; playerId < playerCount; playerId++) {
+			PlayerScore playerScore = new PlayerScore(playerId);
+			playerScoreList.add(playerId, playerScore);
+		}
 
 		int maxHoleNumber = 0;
+		currentHole = 0;
 		for (Result result : gameResult.getResults()) {
+			if (currentHole < result.getHoleNumber())
+				currentHole = result.getHoleNumber();
+
 			int holeNumber = result.getHoleNumber();
 			int parNumber = result.getParNumber();
 			if (holeNumber > maxHoleNumber)
@@ -118,17 +220,117 @@ public class OneGameHoleResultFragment extends ListFragment implements
 
 				item.fee = holeFee;
 
+				PlayerScore playerScore = playerScoreList.get(playerId);
+				playerScore.originalHoleFee += fees[playerId];
+				playerScore.adjustedHoleFee = playerScore.originalHoleFee;
+
 				holeResult.add(item);
 			}
 
 			holeResult.sort();
 		}
 
+		finalHoleTextView.setText(getString(
+				R.string.fragment_onegameholeresult_final_hole_format,
+				holeCount));
+		if (currentHole < 1) {
+			currentHoleTextView
+					.setText(R.string.fragment_onegameholeresult_no_hole_number);
+		} else {
+			currentHoleTextView.setText(getString(
+					R.string.fragment_onegameholeresult_current_hole_format,
+					currentHole));
+		}
+		adjustFee(playerScoreList, gameResult,
+				currentHole >= gameResult.getHoleCount());
+
+		UIUtil.setFeeTextView(getActivity(), totalHoleFeeTextView,
+				gameResult.getHoleFee());
+		UIUtil.setFeeTextView(getActivity(), totalTotalFeeTextView,
+				gameResult.getTotalFee());
+
 		adapter.clear();
 		for (int i = maxHoleNumber; i >= 1; i--) {
 			adapter.add(holeResultArray.get(i));
 		}
 		adapter.notifyDataSetChanged();
+	}
+
+	private void adjustFee(ArrayList<PlayerScore> playerScoreList,
+			SingleGameResult result, boolean isGameFinished) {
+		int sumOfHoleFee = 0;
+		int sumOfRankingFee = 0;
+		for (PlayerScore playerScore : playerScoreList) {
+			sumOfHoleFee += playerScore.originalHoleFee;
+			sumOfRankingFee += playerScore.originalRankingFee;
+		}
+
+		int rankingFee = result.getRankingFee();
+		int holeFee = result.getHoleFee();
+
+		int remainOfHoleFee = 0;
+		if (sumOfHoleFee < holeFee && isGameFinished) {
+			int additionalHoleFeePerPlayer = FeeCalculator.ceil(holeFee
+					- sumOfHoleFee, result.getPlayerCount());
+
+			int sum = 0;
+			for (PlayerScore playerScore : playerScoreList) {
+				playerScore.adjustedHoleFee += additionalHoleFeePerPlayer;
+				sum += playerScore.adjustedHoleFee;
+			}
+			remainOfHoleFee = sum - holeFee;
+		} else if (sumOfHoleFee > holeFee) {
+			remainOfHoleFee = sumOfHoleFee - holeFee;
+		}
+
+		int remainOfRankingFee = 0;
+		if (sumOfRankingFee < rankingFee) {
+			int additionalRankingFeePerPlayer = FeeCalculator.ceil(rankingFee
+					- sumOfRankingFee, result.getPlayerCount());
+
+			int sum = 0;
+			for (PlayerScore playerScore : playerScoreList) {
+				playerScore.adjustedRankingFee += additionalRankingFeePerPlayer;
+				sum += playerScore.adjustedRankingFee;
+			}
+			remainOfRankingFee = sum - rankingFee;
+		} else if (sumOfRankingFee > rankingFee) {
+			remainOfRankingFee = sumOfRankingFee - rankingFee;
+		}
+
+		PlayerScore lastSinglePlayerScore = null;
+		for (PlayerScore playerScore : playerScoreList) {
+			if (playerScore.sameRankingCount <= 1) {
+				lastSinglePlayerScore = playerScore;
+			}
+		}
+		if (remainOfHoleFee > 0 || remainOfRankingFee > 0) {
+			if (lastSinglePlayerScore != null) {
+				lastSinglePlayerScore.adjustedRankingFee -= (remainOfHoleFee + remainOfRankingFee);
+			} else {
+				// 이 경우 어떻게 해야 할까요?
+			}
+		}
+
+		sumOfHoleFee = 0;
+		sumOfRankingFee = 0;
+		for (PlayerScore playerScore : playerScoreList) {
+			sumOfHoleFee += playerScore.adjustedHoleFee;
+			sumOfRankingFee += playerScore.adjustedRankingFee;
+
+			playerScore.adjustedTotalFee = playerScore.adjustedHoleFee
+					+ playerScore.adjustedRankingFee;
+		}
+
+		if (sumOfHoleFeeTextView != null) {
+			UIUtil.setFeeTextView(getActivity(), sumOfHoleFeeTextView,
+					sumOfHoleFee);
+		}
+
+		if (sumOfTotalFeeTextView != null) {
+			UIUtil.setFeeTextView(getActivity(), sumOfTotalFeeTextView,
+					sumOfHoleFee + sumOfRankingFee);
+		}
 	}
 
 	private static class HoleResult {
@@ -202,6 +404,52 @@ public class OneGameHoleResultFragment extends ListFragment implements
 		}
 	}
 
+	private static class PlayerScore implements Comparable<PlayerScore> {
+
+		private int playerId;
+		private int ranking;
+		private int sameRankingCount;
+		private int score;
+
+		private int originalHoleFee, adjustedHoleFee;
+		private int originalRankingFee, adjustedRankingFee;
+		private int adjustedTotalFee;
+
+		public PlayerScore(int playerId) {
+			this.playerId = playerId;
+
+			this.ranking = 0;
+			this.score = 0;
+
+			this.originalHoleFee = 0;
+			this.originalRankingFee = 0;
+			this.adjustedHoleFee = 0;
+			this.adjustedRankingFee = 0;
+			this.adjustedTotalFee = 0;
+		}
+
+		@Override
+		public int compareTo(PlayerScore compare) {
+			if (ranking < compare.ranking)
+				return -1;
+			if (ranking > compare.ranking)
+				return 1;
+			if (score < compare.score)
+				return -1;
+			if (score > compare.score)
+				return 1;
+			if (adjustedTotalFee < compare.adjustedTotalFee)
+				return -1;
+			if (adjustedTotalFee > compare.adjustedTotalFee)
+				return 1;
+			if (playerId < compare.playerId)
+				return -1;
+			if (playerId > compare.playerId)
+				return 1;
+			return 0;
+		}
+	}
+
 	private static class HoleResultListViewHolder {
 		View[] rankingViews;
 		TextView holeNumberTextView;
@@ -212,18 +460,12 @@ public class OneGameHoleResultFragment extends ListFragment implements
 	private class HoleResultListAdapter extends ArrayAdapter<HoleResult> {
 
 		private HoleResultListViewHolder holder;
-		private DecimalFormat feeFormat;
-		private int defaultTextColor;
 		private int textViewResourceId;
 
 		public HoleResultListAdapter(Context context, int textViewResourceId) {
 			super(context, textViewResourceId);
+
 			this.textViewResourceId = textViewResourceId;
-			TypedValue tv = new TypedValue();
-			context.getTheme().resolveAttribute(R.attr.primaryTextColor, tv,
-					true);
-			defaultTextColor = getResources().getColor(tv.resourceId);
-			feeFormat = new DecimalFormat(getString(R.string.fee_format));
 		}
 
 		@Override
@@ -347,7 +589,7 @@ public class OneGameHoleResultFragment extends ListFragment implements
 				return v;
 
 			holder.holeNumberTextView.setText(getString(
-					R.string.fragment_hole_result_hole_number_format,
+					R.string.fragment_onegameholeresult_hole_number_format,
 					holeResult.holeNumber, holeResult.parNumber));
 
 			int playerCount = holeResult.playerCount;
@@ -360,48 +602,32 @@ public class OneGameHoleResultFragment extends ListFragment implements
 				else
 					holder.rankingTextViews[i].setVisibility(View.INVISIBLE);
 
-				holder.rankingTextViews[i].setText(getString(
-						R.string.ranking_format, item.ranking));
+				Context context = getContext();
+
+				holder.rankingTextViews[i].setText(UIUtil.formatRanking(
+						context, item.ranking));
 				holder.nameTextViews[i].setText(item.name);
 
-				if (item.score > 0) {
-					holder.scoreTextViews[i].setText(getString(
-							R.string.positive_format, item.score));
-				} else {
-					holder.scoreTextViews[i]
-							.setText(String.valueOf(item.score));
-				}
+				UIUtil.setScoreTextView(context, holder.scoreTextViews[i],
+						item.score);
 
 				if (item.handicap > 0) {
-					holder.handicapTextViews[i].setText("-" + item.handicap);
+					UIUtil.setHandicapTextView(context,
+							holder.handicapTextViews[i], item.handicap);
 					holder.handicapTextViews[i].setVisibility(View.VISIBLE);
 					holder.scoreTextViews[i].setVisibility(View.VISIBLE);
 				} else {
-					holder.handicapTextViews[i].setText("-");
+					holder.handicapTextViews[i]
+							.setText(R.string.fragment_onegameholeresult_no_handicap);
 					holder.handicapTextViews[i].setVisibility(View.GONE);
 					holder.scoreTextViews[i].setVisibility(View.GONE);
 				}
 
-				holder.feeTextViews[i].setText(feeFormat.format(item.fee));
+				holder.feeTextViews[i].setText(UIUtil.formatFee(context,
+						item.fee));
 
-				if (item.finalScore > 0) {
-					holder.finalScoreTextViews[i].setText(getString(
-							R.string.positive_format, item.finalScore));
-				} else {
-					holder.finalScoreTextViews[i].setText(String
-							.valueOf(item.finalScore));
-				}
-
-				if (item.finalScore < 0) {
-					holder.finalScoreTextViews[i]
-							.setTextColor(Constants.UNDER_PAR_TEXT_COLOR);
-				} else if (item.finalScore == 0) {
-					holder.finalScoreTextViews[i]
-							.setTextColor(Constants.EVEN_PAR_TEXT_COLOR);
-				} else {
-					holder.finalScoreTextViews[i]
-							.setTextColor(defaultTextColor);
-				}
+				UIUtil.setScoreTextView(context, holder.finalScoreTextViews[i],
+						item.finalScore);
 			}
 
 			for (int i = playerCount; i < Constants.MAX_PLAYER_COUNT; i++) {

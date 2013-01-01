@@ -21,6 +21,7 @@ import org.dolicoli.android.golfscoreboardg.net.HttpScraper;
 import org.dolicoli.android.golfscoreboardg.net.ResponseException;
 import org.holoeverywhere.ArrayAdapter;
 import org.holoeverywhere.LayoutInflater;
+import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.app.ListFragment;
 import org.holoeverywhere.widget.AdapterView;
 import org.holoeverywhere.widget.AdapterView.OnItemSelectedListener;
@@ -442,6 +443,9 @@ public class NetShareClientFragment extends ListFragment implements
 			item = (DateItem) dateRangeSpinner.getSelectedItem();
 		}
 
+		if (item == null)
+			return;
+		
 		gameListTask = new GameHistoryListReceiveTask(getSupportActivity());
 		gameListTask.execute(item);
 	}
@@ -649,7 +653,8 @@ public class NetShareClientFragment extends ListFragment implements
 			if (error) {
 				requestFailed(R.string.fragment_netshare_client_message_receive_error);
 			} else {
-				getActivity().finish();
+				getSupportActivity().setResult(Activity.RESULT_OK);
+				getSupportActivity().finish();
 				return;
 			}
 

@@ -1,18 +1,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.dolicoli.android.golfscoreboardg"
     android:installLocation="auto"
-    android:versionCode="23"
-    android:versionName="1.1.7" >
+    android:versionCode="24"
+    android:versionName="1.1.8" >
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="15" />
+        android:targetSdkVersion="16" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name="GolfScoreBoardApplication"
+        android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/LightTheme" >
@@ -26,7 +27,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
         <!-- Current Game -->
         <activity
             android:name=".CurrentGameNewGameSettingActivity"
@@ -39,13 +40,13 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden" />
         <activity
-            android:name=".CurrentGameAddResultActivity"
-            android:label="@string/title_activity_current_game_add_result"
+            android:name=".AddResultActivity"
+            android:label="@string/title_activity_add_result"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden" />
         <activity
-            android:name=".CurrentGameModifyResultActivity"
-            android:label="@string/title_activity_current_game_modify_result"
+            android:name=".ModifyResultActivity"
+            android:label="@string/title_activity_modify_result"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden" />
 

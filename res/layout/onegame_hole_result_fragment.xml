@@ -13,21 +13,13 @@
         <Button
             android:id="@+id/ModifyFeeSettingButton"
             style="?attr/borderlessButton"
-            android:layout_width="55dip"
+            android:layout_width="1dip"
             android:layout_height="?attr/preferredItemHeight"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
             android:paddingLeft="4dip"
             android:paddingRight="4dip"
-            android:text="@string/modify_game_setting"
             android:textAppearance="?attr/textAppearanceSmall" />
-
-        <ImageView
-            android:id="@+id/ModifyFeeSettingSeparator"
-            style="?attr/borderlessButtonVerticalDivider"
-            android:layout_height="?attr/preferredItemHeight"
-            android:layout_toLeftOf="@+id/ModifyFeeSettingButton"
-            android:contentDescription="@string/divider" />
 
         <TextView
             android:id="@+id/SumOfTotalFeeTextView"
@@ -35,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/ModifyFeeSettingButton"
             android:layout_gravity="center_vertical"
-            android:layout_toLeftOf="@+id/ModifyFeeSettingSeparator"
+            android:layout_toLeftOf="@+id/ModifyFeeSettingButton"
             android:gravity="center"
             android:paddingTop="3dip"
             android:textAppearance="?attr/textAppearanceMedium"
@@ -47,10 +39,10 @@
             android:layout_width="95dip"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/ModifyFeeSettingButton"
-            android:layout_toLeftOf="@+id/ModifyFeeSettingSeparator"
+            android:layout_toLeftOf="@+id/ModifyFeeSettingButton"
             android:gravity="center"
             android:paddingBottom="3dip"
-            android:textColor="?attr/secondaryTextColor1" />
+            android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/SumOfHoleFeeTextView"
@@ -71,7 +63,7 @@
             android:layout_alignBaseline="@+id/TotalTotalFeeTextView"
             android:layout_toLeftOf="@+id/SumOfTotalFeeTextView"
             android:gravity="center"
-            android:textColor="?attr/secondaryTextColor1" />
+            android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/CurrentHoleTextView"
@@ -92,14 +84,14 @@
             android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@+id/TotalHoleFeeTextView"
             android:gravity="center"
-            android:textColor="?attr/secondaryTextColor1" />
+            android:textColor="?attr/secondaryTextColor" />
 
         <ImageView
             android:id="@+id/Separator"
             style="?attr/borderlessButtonHorizontalDivider"
             android:layout_alignWithParentIfMissing="true"
             android:layout_below="@+id/ModifyFeeSettingButton"
-            android:contentDescription="@string/divider" />
+            android:contentDescription="@string/blank" />
     </RelativeLayout>
 
     <ListView
@@ -107,6 +99,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
+        android:layout_alignWithParentIfMissing="true"
         android:layout_below="@+id/GameSettingView" />
 
 </RelativeLayout>

@@ -1,6 +1,5 @@
 package org.dolicoli.android.golfscoreboardg.fragments.statistics;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import org.dolicoli.android.golfscoreboardg.R;
@@ -11,12 +10,12 @@ import org.dolicoli.android.golfscoreboardg.utils.DateRangeUtil;
 import org.dolicoli.android.golfscoreboardg.utils.DateRangeUtil.DateRange;
 import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.holoeverywhere.LayoutInflater;
-import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.app.Fragment;
 import org.holoeverywhere.widget.Button;
 import org.holoeverywhere.widget.TextView;
 
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -283,11 +282,11 @@ public class PersonalStatisticsSummaryFragment extends Fragment implements
 	@Override
 	public void onResume() {
 		super.onResume();
-		reload();
+		reload(false);
 	}
 
 	@Override
-	public void reload() {
+	public void reload(boolean clean) {
 		if (dataContainer == null)
 			return;
 
@@ -330,7 +329,7 @@ public class PersonalStatisticsSummaryFragment extends Fragment implements
 			int ranking = playerScore.getRanking();
 			boolean lastStanding = playerScore.isLastStanding();
 			int fee = playerScore.getAdjustedTotalFee();
-			int score = playerScore.getScore();
+			int score = playerScore.getOriginalScore();
 
 			if (recent5Count < 5) {
 				recent5RankingSum += ranking;
@@ -631,17 +630,16 @@ public class PersonalStatisticsSummaryFragment extends Fragment implements
 			TextView avgFeeTextView, TextView maxFeeTextView,
 			TextView minFeeTextView, TextView totalFeeTextView) {
 
-		DecimalFormat rateFormat = new DecimalFormat("0.00 %");
-		Activity activity = getSupportActivity();
+		FragmentActivity activity = getActivity();
 
 		if (count < 1) {
-			avgRankingTextView.setText("-");
-			avgStrokeCountTextView.setText("-");
-			avgFeeTextView.setText("-");
-			firstStandingTextView.setText("- ȸ");
-			firstStandingRateTextView.setText("- %");
-			lastStandingTextView.setText("- ȸ");
-			lastStandingRateTextView.setText("- %");
+			avgRankingTextView.setText(R.string.no_data);
+			avgStrokeCountTextView.setText(R.string.no_data);
+			avgFeeTextView.setText(R.string.no_data);
+			firstStandingTextView.setText(R.string.no_game_count);
+			firstStandingRateTextView.setText(R.string.no_rate);
+			lastStandingTextView.setText(R.string.no_game_count);
+			lastStandingRateTextView.setText(R.string.no_rate);
 		} else {
 			double avgRanking = ((double) rankingSum) / ((double) count);
 			UIUtil.setAvgRankingTextView(activity, avgRankingTextView,
@@ -659,47 +657,50 @@ public class PersonalStatisticsSummaryFragment extends Fragment implements
 					/ ((double) count);
 			double lastStandingRate = ((double) lastStandingCount)
 					/ ((double) count);
-			firstStandingTextView.setText(firstStandingCount + " ȸ");
-			firstStandingRateTextView.setText(rateFormat
-					.format(firstStandingRate));
-			lastStandingTextView.setText(lastStandingCount + " ȸ");
-			lastStandingRateTextView.setText(rateFormat
-					.format(lastStandingRate));
+
+			UIUtil.setGameCountTextView(activity, firstStandingTextView,
+					firstStandingCount);
+			UIUtil.setRateTextView(activity, firstStandingRateTextView,
+					firstStandingRate);
+			UIUtil.setGameCountTextView(activity, lastStandingTextView,
+					lastStandingCount);
+			UIUtil.setRateTextView(activity, lastStandingRateTextView,
+					lastStandingRate);
 		}
 
 		if (attendCountTextView != null) {
-			attendCountTextView.setText(count + " ȸ");
+			UIUtil.setGameCountTextView(activity, attendCountTextView, count);
 		}
 
 		if (rankingMax < 1) {
-			maxRankingTextView.setText("-");
+			maxRankingTextView.setText(R.string.no_data);
 		} else {
 			UIUtil.setRankingTextView(activity, maxRankingTextView, rankingMax);
 		}
 		if (rankingMin < 1) {
-			minRankingTextView.setText("-");
+			minRankingTextView.setText(R.string.no_data);
 		} else {
 			UIUtil.setRankingTextView(activity, minRankingTextView, rankingMin);
 		}
 		if (strokeCountMax < 1) {
-			maxStrokeCountTextView.setText("-");
+			maxStrokeCountTextView.setText(R.string.no_data);
 		} else {
 			UIUtil.setScoreTextView(activity, maxStrokeCountTextView,
 					strokeCountMax);
 		}
 		if (strokeCountMin < 1) {
-			minStrokeCountTextView.setText("-");
+			minStrokeCountTextView.setText(R.string.no_data);
 		} else {
 			UIUtil.setScoreTextView(activity, minStrokeCountTextView,
 					strokeCountMin);
 		}
 		if (feeMax < 1) {
-			maxFeeTextView.setText("-");
+			maxFeeTextView.setText(R.string.no_data);
 		} else {
 			UIUtil.setFeeTextView(activity, maxFeeTextView, feeMax);
 		}
 		if (feeMin < 1) {
-			minFeeTextView.setText("-");
+			minFeeTextView.setText(R.string.no_data);
 		} else {
 			UIUtil.setFeeTextView(activity, minFeeTextView, feeMin);
 		}

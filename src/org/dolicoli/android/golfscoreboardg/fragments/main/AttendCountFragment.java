@@ -1,5 +1,6 @@
 package org.dolicoli.android.golfscoreboardg.fragments.main;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,8 +9,11 @@ import org.dolicoli.android.golfscoreboardg.Constants;
 import org.dolicoli.android.golfscoreboardg.HistoryActivity;
 import org.dolicoli.android.golfscoreboardg.R;
 import org.dolicoli.android.golfscoreboardg.Reloadable;
-import org.dolicoli.android.golfscoreboardg.data.SingleGameResult;
-import org.dolicoli.android.golfscoreboardg.tasks.SimpleHistoryQueryTask;
+import org.dolicoli.android.golfscoreboardg.data.GameAndResult;
+import org.dolicoli.android.golfscoreboardg.tasks.HistoryGameSettingRangeQueryTask;
+import org.dolicoli.android.golfscoreboardg.tasks.ThreeMonthsGameReceiveTask;
+import org.dolicoli.android.golfscoreboardg.tasks.ThreeMonthsGameReceiveTask.ReceiveProgress;
+import org.dolicoli.android.golfscoreboardg.tasks.ThreeMonthsGameReceiveTask.ReceiveResult;
 import org.dolicoli.android.golfscoreboardg.utils.DateRangeUtil;
 import org.dolicoli.android.golfscoreboardg.utils.DateRangeUtil.DateRange;
 import org.dolicoli.android.golfscoreboardg.utils.PlayerUIUtil;
@@ -17,39 +21,59 @@ import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.app.Fragment;
-import org.holoeverywhere.widget.TextView;
+import org.holoeverywhere.app.ProgressDialog;
+import org.holoeverywhere.widget.Toast;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
-public class OldGamesSummaryFragment extends Fragment implements Reloadable,
-		OnClickListener, SimpleHistoryQueryTask.TaskListener {
+public class AttendCountFragment extends Fragment implements Reloadable,
+		OnClickListener, HistoryGameSettingRangeQueryTask.TaskListener,
+		ThreeMonthsGameReceiveTask.TaskListener {
 
 	@SuppressWarnings("unused")
-	private static final String TAG = "OldGamesSummaryFragment";
+	private static final String TAG = "AttendCountFragment";
+
+	private static final String DEFAULT_PLAYER_NAME_PREFIX = "Player";
 
 	private static final int REQ_HISTORY = 0x0001;
+
+	private View noHistoryTextView, mainView;
 
 	private TextView gameCountTextView, totalFeeSumTextView;
 	private View[] playerViews, playerTagViews;
 	private ImageView[] playerImageViews;
 	private TextView[] playerNameTextViews, playerAttendCountTextViews;
 
-	private PlayerAttendCount[] playerAttendCountArray;
+	private ProgressDialog progressDialog;
+
+	private int itemCount;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		itemCount = 0;
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.old_game_result_list_fragment,
-				null);
+		View view = inflater.inflate(R.layout.attend_count_fragment, null);
+
+		noHistoryTextView = view.findViewById(R.id.NoHistoryTextView);
+		mainView = view.findViewById(R.id.MainView);
 
 		gameCountTextView = (TextView) view
 				.findViewById(R.id.GameCountTextView);
@@ -114,7 +138,7 @@ public class OldGamesSummaryFragment extends Fragment implements Reloadable,
 		playerAttendCountTextViews[5] = (TextView) view
 				.findViewById(R.id.Player6AttendCountTextView);
 
-		view.setOnClickListener(this);
+		mainView.setOnClickListener(this);
 
 		return view;
 	}
@@ -122,39 +146,37 @@ public class OldGamesSummaryFragment extends Fragment implements Reloadable,
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
 		setHasOptionsMenu(true);
-
-		reload();
+		reload(false);
 	}
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		super.onCreateOptionsMenu(menu, inflater);
-		inflater.inflate(R.menu.old_games_summary, menu);
+		inflater.inflate(R.menu.attend_count, menu);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		Activity activity = this.getSupportActivity();
-		if (activity == null || !(activity instanceof CurrentGameDataContainer)) {
-			return false;
-		}
-		CurrentGameDataContainer container = (CurrentGameDataContainer) activity;
-
 		switch (item.getItemId()) {
 		case R.id.ImportThreeMonth:
-			container.importThreeMonthData();
-			return true;
-		case R.id.Settings:
-			container.showSettingActivity();
+			importThreeMonthData();
 			return true;
 		}
-		return super.onOptionsItemSelected(item);
+
+		Activity activity = getSupportActivity();
+		if (activity == null) {
+			return false;
+		}
+
+		return activity.onOptionsItemSelected(item);
 	}
 
 	@Override
 	public void onClick(View v) {
+		if (itemCount < 1)
+			return;
+
 		Intent historyIntent = new Intent(getActivity(), HistoryActivity.class);
 		startActivityForResult(historyIntent, REQ_HISTORY);
 	}
@@ -164,29 +186,30 @@ public class OldGamesSummaryFragment extends Fragment implements Reloadable,
 		super.onActivityResult(requestCode, resultCode, data);
 
 		if (requestCode == REQ_HISTORY) {
-			reload();
+			reload(true);
 		}
 	}
 
 	@Override
-	public void reload() {
-		if (getActivity() == null || totalFeeSumTextView == null)
+	public void reload(boolean clean) {
+		FragmentActivity activity = getActivity();
+		if (activity == null)
 			return;
 
 		DateRange dateRange = DateRangeUtil.getDateRange(3);
 
-		SimpleHistoryQueryTask task = new SimpleHistoryQueryTask(getActivity(),
-				this);
+		HistoryGameSettingRangeQueryTask task = new HistoryGameSettingRangeQueryTask(
+				activity, this);
 		task.execute(dateRange);
 	}
 
 	@Override
-	public void onGameQueryStarted() {
+	public void onHistoryGameSettingQueryStarted() {
 	}
 
 	@Override
-	public void onGameQueryFinished(SingleGameResult[] gameResults) {
-		Activity activity = getSupportActivity();
+	public void onHistoryGameSettingQueryFinished(GameAndResult[] gameResults) {
+		FragmentActivity activity = getActivity();
 		if (activity == null || gameResults == null)
 			return;
 
@@ -194,14 +217,14 @@ public class OldGamesSummaryFragment extends Fragment implements Reloadable,
 
 		int gameCount = 0;
 		int totalFeeSum = 0;
-		for (SingleGameResult gameResult : gameResults) {
+		for (GameAndResult gameResult : gameResults) {
 			totalFeeSum += gameResult.getTotalFee();
 			gameCount++;
 
 			int playerCount = gameResult.getPlayerCount();
 			for (int playerId = 0; playerId < playerCount; playerId++) {
 				String playerName = gameResult.getPlayerName(playerId);
-				if (playerName.startsWith("Player"))
+				if (playerName.startsWith(DEFAULT_PLAYER_NAME_PREFIX))
 					continue;
 
 				playerName = PlayerUIUtil.toCanonicalName(playerName);
@@ -217,45 +240,159 @@ public class OldGamesSummaryFragment extends Fragment implements Reloadable,
 
 		Collection<PlayerAttendCount> playerAttendCounts = attendCountMap
 				.values();
-		playerAttendCountArray = new PlayerAttendCount[playerAttendCounts
-				.size()];
+		itemCount = playerAttendCounts.size();
+		PlayerAttendCount[] playerAttendCountArray = new PlayerAttendCount[itemCount];
 		playerAttendCounts.toArray(playerAttendCountArray);
 		Arrays.sort(playerAttendCountArray);
 
-		UIUtil.setGameCountTextView(activity, gameCountTextView, gameCount);
-		UIUtil.setFeeTextView(activity, totalFeeSumTextView, totalFeeSum);
+		if (playerAttendCountArray.length < 1) {
+			noHistoryTextView.setVisibility(View.VISIBLE);
+			mainView.setVisibility(View.INVISIBLE);
+		} else {
+			noHistoryTextView.setVisibility(View.INVISIBLE);
+			mainView.setVisibility(View.VISIBLE);
 
-		for (int i = 0; i < Constants.MAX_PLAYER_COUNT; i++) {
-			int imageResourceId = R.drawable.face_unknown_r;
-			int tagColorResourceId = 0x00000000;
-			if (i < playerAttendCountArray.length) {
-				imageResourceId = PlayerUIUtil
-						.getRoundResourceId(playerAttendCountArray[i].name);
-				tagColorResourceId = PlayerUIUtil
-						.getTagColor(playerAttendCountArray[i].name);
-				if (playerAttendCountArray[i].name.length() > 3) {
-					playerNameTextViews[i]
-							.setText(playerAttendCountArray[i].name
-									.subSequence(0, 4));
+			UIUtil.setGameCountTextView(activity, gameCountTextView, gameCount);
+			UIUtil.setFeeTextView(activity, totalFeeSumTextView, totalFeeSum);
+
+			for (int i = 0; i < Constants.MAX_PLAYER_COUNT; i++) {
+				int imageResourceId = R.drawable.face_unknown_r;
+				int tagColorResourceId = 0x00000000;
+				if (i < playerAttendCountArray.length) {
+					imageResourceId = PlayerUIUtil
+							.getRoundResourceId(playerAttendCountArray[i].name);
+					tagColorResourceId = PlayerUIUtil
+							.getTagColor(playerAttendCountArray[i].name);
+					if (playerAttendCountArray[i].name.length() > 3) {
+						playerNameTextViews[i]
+								.setText(playerAttendCountArray[i].name
+										.subSequence(0, 4));
+					} else {
+						playerNameTextViews[i]
+								.setText(playerAttendCountArray[i].name);
+					}
+					playerImageViews[i].setImageResource(imageResourceId);
+					playerTagViews[i].setBackgroundColor(tagColorResourceId);
+					UIUtil.setGameCountTextView(activity,
+							playerAttendCountTextViews[i],
+							playerAttendCountArray[i].count);
+
+					playerViews[i].setVisibility(View.VISIBLE);
 				} else {
-					playerNameTextViews[i]
-							.setText(playerAttendCountArray[i].name);
+					playerViews[i].setVisibility(View.INVISIBLE);
 				}
-				playerImageViews[i].setImageResource(imageResourceId);
-				playerTagViews[i].setBackgroundColor(tagColorResourceId);
-				UIUtil.setGameCountTextView(activity,
-						playerAttendCountTextViews[i],
-						playerAttendCountArray[i].count);
-
-				playerViews[i].setVisibility(View.VISIBLE);
-			} else {
-				playerViews[i].setVisibility(View.INVISIBLE);
 			}
 		}
 	}
 
-	private static class PlayerAttendCount implements
+	@Override
+	public void onThreeMonthsGameReceiveStart() {
+		showProgressDialog();
+	}
+
+	@Override
+	public void onThreeMonthsGameReceiveProgressUpdate(ReceiveProgress value) {
+		if (value == null)
+			return;
+
+		int current = value.getCurrent();
+		int total = value.getTotal();
+
+		setProgressDialogStatus(current, total, value.getMessage());
+	}
+
+	@Override
+	public void onThreeMonthsGameReceiveFinished(ReceiveResult result) {
+		FragmentActivity activity = getActivity();
+		if (activity == null)
+			return;
+
+		if (result.isSuccess()) {
+			if (!result.isCancel()) {
+				Toast.makeText(
+						activity,
+						R.string.fragment_attendcount_import_three_month_success,
+						Toast.LENGTH_LONG).show();
+				reload(true);
+			}
+		} else {
+			Toast.makeText(activity,
+					R.string.fragment_attendcount_import_three_month_fail,
+					Toast.LENGTH_LONG).show();
+		}
+		hideProgressDialog();
+	}
+
+	private void importThreeMonthData() {
+		final FragmentActivity activity = getActivity();
+		final AttendCountFragment instance = this;
+
+		new AlertDialog.Builder(activity)
+				.setTitle(R.string.dialog_import_three_month)
+				.setMessage(R.string.dialog_are_you_sure_to_import_three_month)
+				.setPositiveButton(android.R.string.yes,
+						new DialogInterface.OnClickListener() {
+
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								ThreeMonthsGameReceiveTask task = new ThreeMonthsGameReceiveTask(
+										activity, instance);
+								task.execute();
+							}
+
+						}).setNegativeButton(android.R.string.no, null).show();
+	}
+
+	private void showProgressDialog() {
+		FragmentActivity activity = getActivity();
+		if (activity == null)
+			return;
+
+		if (progressDialog != null && progressDialog.isShowing()) {
+			return;
+		}
+
+		progressDialog = new ProgressDialog(activity);
+		progressDialog.setTitle(R.string.dialog_import_three_month);
+		progressDialog
+				.setMessage(getString(R.string.dialog_import_three_month_please_wait));
+		progressDialog.setIndeterminate(true);
+		progressDialog.setMax(100);
+		progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		progressDialog.setCancelable(true);
+		progressDialog.show();
+	}
+
+	private void setProgressDialogStatus(int current, int total,
+			final String message) {
+		if (progressDialog == null) {
+			showProgressDialog();
+		} else {
+			if (total <= 0) {
+				progressDialog.setIndeterminate(true);
+			} else {
+				progressDialog.setIndeterminate(false);
+
+				progressDialog.setMax(total);
+				progressDialog.setProgress(current);
+			}
+			progressDialog.setMessage(message);
+		}
+	}
+
+	private void hideProgressDialog() {
+		if (progressDialog != null) {
+			progressDialog.dismiss();
+			progressDialog = null;
+		}
+	}
+
+	private static class PlayerAttendCount implements Serializable,
 			Comparable<PlayerAttendCount> {
+
+		private static final long serialVersionUID = 7782414183265330052L;
+
 		private String name;
 		private int count;
 
@@ -277,5 +414,4 @@ public class OldGamesSummaryFragment extends Fragment implements Reloadable,
 			return name.compareTo(another.name);
 		}
 	}
-
 }

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import org.dolicoli.android.golfscoreboardg.Constants;
-import org.dolicoli.android.golfscoreboardg.HistoryActivity;
 import org.dolicoli.android.golfscoreboardg.OneGameActivity;
 import org.dolicoli.android.golfscoreboardg.R;
 import org.dolicoli.android.golfscoreboardg.data.GameAndResult;
@@ -55,11 +54,6 @@ public class GameResultHistoryFragment extends ListFragment implements
 		setListAdapter(adapter);
 
 		return view;
-	}
-
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
 	}
 
 	@Override
@@ -119,21 +113,6 @@ public class GameResultHistoryFragment extends ListFragment implements
 		for (int i = 0; i < size; i++) {
 			listView.setItemChecked(i, false);
 		}
-	}
-
-	private void deleteSelectedItems() {
-		ListView listView = getListView();
-		int size = listView.getCount();
-		SparseBooleanArray positions = getListView().getCheckedItemPositions();
-
-		final ArrayList<String> playDates = new ArrayList<String>();
-		for (int i = 0; i < size; i++) {
-			if (positions.get(i)) {
-				GameAndResult history = adapter.getItem(i);
-				playDates.add(history.getGameSetting().getPlayDate());
-			}
-		}
-		((HistoryActivity) getActivity()).deleteHistory(playDates);
 	}
 
 	private static class HistoryListViewHolder {
@@ -357,8 +336,7 @@ public class GameResultHistoryFragment extends ListFragment implements
 							.setImageResource(faceImageResourceId);
 				}
 
-				int tagColor = PlayerUIUtil
-						.getTagColor(playerScoreItem.name);
+				int tagColor = PlayerUIUtil.getTagColor(playerScoreItem.name);
 				holder.playerTagViews[i].setBackgroundColor(tagColor);
 			}
 
@@ -394,24 +372,6 @@ public class GameResultHistoryFragment extends ListFragment implements
 			}
 
 			return v;
-		}
-
-		public void clearSelection() {
-			contextualMode = false;
-			selectionMap.clear();
-			notifyDataSetChanged();
-		}
-
-		public void removeSelection(int position) {
-			contextualMode = true;
-			selectionMap.delete(position);
-			notifyDataSetChanged();
-		}
-
-		public void setNewSelection(int position, boolean checked) {
-			contextualMode = true;
-			selectionMap.put(position, checked);
-			notifyDataSetChanged();
 		}
 	}
 

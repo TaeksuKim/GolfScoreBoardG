@@ -6,23 +6,23 @@ import org.dolicoli.android.golfscoreboardg.R;
 import org.dolicoli.android.golfscoreboardg.data.SingleGameResult;
 import org.dolicoli.android.golfscoreboardg.data.settings.Result;
 import org.dolicoli.android.golfscoreboardg.tasks.CurrentGameQueryTask;
-import org.dolicoli.android.golfscoreboardg.tasks.HistoryQueryTask;
+import org.dolicoli.android.golfscoreboardg.tasks.HistoryGameSettingWithResultQueryTask;
 import org.dolicoli.android.golfscoreboardg.utils.FeeCalculator;
 import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.holoeverywhere.ArrayAdapter;
 import org.holoeverywhere.LayoutInflater;
-import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.app.ListFragment;
 import org.holoeverywhere.widget.TextView;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.ViewGroup;
 
 public class OneGamePlayerHoleRecordFragment extends ListFragment implements
 		OneGamePlayerRecordActivityPage, CurrentGameQueryTask.TaskListener,
-		HistoryQueryTask.TaskListener {
+		HistoryGameSettingWithResultQueryTask.TaskListener {
 
 	private ScoreListAdapter adapter;
 
@@ -55,16 +55,16 @@ public class OneGamePlayerHoleRecordFragment extends ListFragment implements
 	}
 
 	@Override
-	public void onGameQueryStarted() {
+	public void onCurrentGameQueryStarted() {
 	}
 
 	@Override
-	public void onGameQueryFinished(SingleGameResult gameResult) {
+	public void onCurrentGameQueryFinished(SingleGameResult gameResult) {
 		reloadUI(gameResult);
 	}
 
 	private void reload() {
-		Activity activity = getSupportActivity();
+		FragmentActivity activity = getActivity();
 		if (activity == null)
 			return;
 
@@ -72,8 +72,10 @@ public class OneGamePlayerHoleRecordFragment extends ListFragment implements
 			CurrentGameQueryTask task = new CurrentGameQueryTask(activity, this);
 			task.execute();
 		} else {
-			HistoryQueryTask task = new HistoryQueryTask(activity, this);
-			task.execute(new HistoryQueryTask.QueryParam(playDate));
+			HistoryGameSettingWithResultQueryTask task = new HistoryGameSettingWithResultQueryTask(
+					activity, this);
+			task.execute(new HistoryGameSettingWithResultQueryTask.QueryParam(
+					playDate));
 		}
 	}
 
@@ -190,9 +192,10 @@ public class OneGamePlayerHoleRecordFragment extends ListFragment implements
 			if (playerScore == null)
 				return v;
 
-			holder.holeTextView.setText(getString(
-					R.string.fragment_player_record_hole_number_format,
-					playerScore.holeNumber, playerScore.parNumber));
+			holder.holeTextView
+					.setText(getString(
+							R.string.fragment_onegame_player_hole_record_hole_number_format,
+							playerScore.holeNumber, playerScore.parNumber));
 
 			UIUtil.setScoreTextView(getContext(), holder.scoreTextView,
 					playerScore.score);
@@ -214,9 +217,9 @@ public class OneGamePlayerHoleRecordFragment extends ListFragment implements
 					playerScore.ranking);
 
 			if (playerScore.sameRankingCount > 1) {
-				holder.sameRankingCountTextView.setText(getString(
-						R.string.fragment_player_record_player_count_format,
-						playerScore.sameRankingCount));
+				UIUtil.setPlayerCountTextView(getContext(),
+						holder.sameRankingCountTextView,
+						playerScore.sameRankingCount);
 				holder.sameRankingCountTextView.setVisibility(View.VISIBLE);
 			} else {
 				holder.sameRankingCountTextView.setVisibility(View.INVISIBLE);

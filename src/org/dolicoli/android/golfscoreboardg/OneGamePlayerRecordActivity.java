@@ -1,12 +1,12 @@
 package org.dolicoli.android.golfscoreboardg;
 
-import org.dolicoli.android.golfscoreboardg.MainActivity.DummySectionFragment;
+import java.util.Locale;
+
 import org.dolicoli.android.golfscoreboardg.data.settings.GameSetting;
 import org.dolicoli.android.golfscoreboardg.data.settings.PlayerSetting;
 import org.dolicoli.android.golfscoreboardg.db.GameSettingDatabaseWorker;
 import org.dolicoli.android.golfscoreboardg.db.HistoryGameSettingDatabaseWorker;
-import org.dolicoli.android.golfscoreboardg.db.HistoryPlayerSettingDatabaseWorker;
-import org.dolicoli.android.golfscoreboardg.db.PlayerSettingDatabaseWorker;
+import org.dolicoli.android.golfscoreboardg.fragments.DummySectionFragment;
 import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGamePlayerHoleRecordFragment;
 import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGamePlayerRecordActivityPage;
 import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGamePlayerRecordSummaryFragment;
@@ -84,19 +84,11 @@ public class OneGamePlayerRecordActivity extends Activity implements
 		if (currentGame) {
 			GameSettingDatabaseWorker gameWorker = new GameSettingDatabaseWorker(
 					this);
-			gameWorker.getGameSetting(gameSetting);
-
-			PlayerSettingDatabaseWorker playerWorker = new PlayerSettingDatabaseWorker(
-					this);
-			playerWorker.getPlayerSetting(playerSetting);
+			gameWorker.getGameSetting(gameSetting, playerSetting);
 		} else {
 			HistoryGameSettingDatabaseWorker gameWorker = new HistoryGameSettingDatabaseWorker(
 					this);
-			gameWorker.getGameSetting(playDate, gameSetting);
-
-			HistoryPlayerSettingDatabaseWorker playerWorker = new HistoryPlayerSettingDatabaseWorker(
-					this);
-			playerWorker.getPlayerSetting(playDate, playerSetting);
+			gameWorker.getGameSetting(playDate, gameSetting, playerSetting);
 		}
 
 		int playerCount = gameSetting.getPlayerCount();
@@ -127,7 +119,7 @@ public class OneGamePlayerRecordActivity extends Activity implements
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == android.R.id.home) {
-			setResult(0);
+			setResult(Activity.RESULT_CANCELED);
 			finish();
 			return true;
 		}
@@ -243,11 +235,13 @@ public class OneGamePlayerRecordActivity extends Activity implements
 		public CharSequence getPageTitle(int position) {
 			switch (position) {
 			case TAB_PLAYER_RECORD_SUMMARY_FRAGMENT:
-				return getString(R.string.player_record_title_section1)
-						.toUpperCase();
+				return getString(
+						R.string.activity_onegame_player_record_fragment_summary)
+						.toUpperCase(Locale.US);
 			case TAB_PLAYER_HOLE_RECORD_FRAGMENT:
-				return getString(R.string.player_record_title_section2)
-						.toUpperCase();
+				return getString(
+						R.string.activity_onegame_player_record_fragment_hole_result)
+						.toUpperCase(Locale.US);
 			}
 			return null;
 		}

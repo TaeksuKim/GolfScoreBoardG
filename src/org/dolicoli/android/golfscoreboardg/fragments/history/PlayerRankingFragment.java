@@ -12,6 +12,7 @@ import org.dolicoli.android.golfscoreboardg.data.GameAndResult;
 import org.dolicoli.android.golfscoreboardg.data.settings.PlayerSetting;
 import org.dolicoli.android.golfscoreboardg.utils.PlayerUIUtil;
 import org.dolicoli.android.golfscoreboardg.utils.TagProgressBar;
+import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.holoeverywhere.ArrayAdapter;
 import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.ListFragment;
@@ -101,8 +102,7 @@ public class PlayerRankingFragment extends ListFragment implements
 					for (int playerId = 0; playerId < playerCount; playerId++) {
 						String playerName = playerSettings
 								.getPlayerName(playerId);
-						playerName = PlayerUIUtil
-								.toCanonicalName(playerName);
+						playerName = PlayerUIUtil.toCanonicalName(playerName);
 						if (playerName.startsWith("Player"))
 							continue;
 
@@ -135,8 +135,7 @@ public class PlayerRankingFragment extends ListFragment implements
 					for (int playerId = 0; playerId < playerCount; playerId++) {
 						String playerName = playerSettings
 								.getPlayerName(playerId);
-						playerName = PlayerUIUtil
-								.toCanonicalName(playerName);
+						playerName = PlayerUIUtil.toCanonicalName(playerName);
 						if (playerName.startsWith("Player"))
 							continue;
 
@@ -246,8 +245,7 @@ public class PlayerRankingFragment extends ListFragment implements
 			DecimalFormat overParScoreCountFormat = new DecimalFormat("+0.00");
 			DecimalFormat underParScoreCountFormat = new DecimalFormat("0.00");
 
-			String attendText = getString(
-					R.string.fragment_personal_statistics_attend_count_format,
+			String attendText = UIUtil.formatGameCount(getActivity(),
 					playerInfo.attend);
 			if (playerInfo.avgOfScore > 0) {
 				holder.attendCountTextView.setText(overParScoreCountFormat

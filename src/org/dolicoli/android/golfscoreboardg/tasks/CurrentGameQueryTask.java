@@ -8,7 +8,6 @@ import org.dolicoli.android.golfscoreboardg.data.settings.GameSetting;
 import org.dolicoli.android.golfscoreboardg.data.settings.PlayerSetting;
 import org.dolicoli.android.golfscoreboardg.data.settings.Result;
 import org.dolicoli.android.golfscoreboardg.db.GameSettingDatabaseWorker;
-import org.dolicoli.android.golfscoreboardg.db.PlayerSettingDatabaseWorker;
 import org.dolicoli.android.golfscoreboardg.db.ResultDatabaseWorker;
 
 import android.content.Context;
@@ -29,7 +28,7 @@ public class CurrentGameQueryTask extends
 	protected void onPreExecute() {
 		super.onPreExecute();
 		if (listener != null) {
-			listener.onGameQueryStarted();
+			listener.onCurrentGameQueryStarted();
 		}
 	}
 
@@ -37,7 +36,7 @@ public class CurrentGameQueryTask extends
 	protected void onPostExecute(SingleGameResult result) {
 		super.onPostExecute(result);
 		if (listener != null) {
-			listener.onGameQueryFinished(result);
+			listener.onCurrentGameQueryFinished(result);
 		}
 	}
 
@@ -49,20 +48,14 @@ public class CurrentGameQueryTask extends
 
 		GameSetting gameSetting = new GameSetting();
 		PlayerSetting playerSetting = new PlayerSetting();
-		ArrayList<Result> results = null;
+		ArrayList<Result> results = new ArrayList<Result>();
 		UsedHandicap usedHandicap = null;
 
 		GameSettingDatabaseWorker gameSettingWorker = new GameSettingDatabaseWorker(
 				context);
-		gameSettingWorker.getGameSetting(gameSetting);
-
-		PlayerSettingDatabaseWorker playerSettingWorker = new PlayerSettingDatabaseWorker(
-				context);
-		playerSettingWorker.getPlayerSetting(playerSetting);
+		gameSettingWorker.getGameSetting(gameSetting, playerSetting, results);
 
 		ResultDatabaseWorker resultWorker = new ResultDatabaseWorker(context);
-		results = resultWorker.getResults();
-
 		usedHandicap = resultWorker.getUsedHandicaps();
 
 		SingleGameResult result = new SingleGameResult();
@@ -75,8 +68,8 @@ public class CurrentGameQueryTask extends
 	}
 
 	public static interface TaskListener {
-		void onGameQueryStarted();
+		void onCurrentGameQueryStarted();
 
-		void onGameQueryFinished(SingleGameResult gameResult);
+		void onCurrentGameQueryFinished(SingleGameResult gameResult);
 	}
 }

@@ -2,27 +2,27 @@ package org.dolicoli.android.golfscoreboardg.tasks;
 
 import java.util.ArrayList;
 
+import org.dolicoli.android.golfscoreboardg.Constants;
 import org.dolicoli.android.golfscoreboardg.data.SingleGameResult;
 import org.dolicoli.android.golfscoreboardg.data.UsedHandicap;
 import org.dolicoli.android.golfscoreboardg.data.settings.GameSetting;
 import org.dolicoli.android.golfscoreboardg.data.settings.PlayerSetting;
 import org.dolicoli.android.golfscoreboardg.data.settings.Result;
 import org.dolicoli.android.golfscoreboardg.db.HistoryGameSettingDatabaseWorker;
-import org.dolicoli.android.golfscoreboardg.db.HistoryPlayerSettingDatabaseWorker;
 import org.dolicoli.android.golfscoreboardg.db.HistoryResultDatabaseWorker;
 
 import android.content.Context;
 import android.os.AsyncTask;
 
-public class HistoryQueryTask extends
-		AsyncTask<HistoryQueryTask.QueryParam, Void, SingleGameResult> {
-
-	public static int WHOLE_HOLE = -1;
+public class HistoryGameSettingWithResultQueryTask
+		extends
+		AsyncTask<HistoryGameSettingWithResultQueryTask.QueryParam, Void, SingleGameResult> {
 
 	private Context context;
 	private TaskListener listener;
 
-	public HistoryQueryTask(Context context, TaskListener listener) {
+	public HistoryGameSettingWithResultQueryTask(Context context,
+			TaskListener listener) {
 		this.context = context;
 		this.listener = listener;
 	}
@@ -31,7 +31,7 @@ public class HistoryQueryTask extends
 	protected void onPreExecute() {
 		super.onPreExecute();
 		if (listener != null) {
-			listener.onGameQueryStarted();
+			listener.onCurrentGameQueryStarted();
 		}
 	}
 
@@ -39,7 +39,7 @@ public class HistoryQueryTask extends
 	protected void onPostExecute(SingleGameResult result) {
 		super.onPostExecute(result);
 		if (listener != null) {
-			listener.onGameQueryFinished(result);
+			listener.onCurrentGameQueryFinished(result);
 		}
 	}
 
@@ -50,29 +50,20 @@ public class HistoryQueryTask extends
 		}
 
 		String playDate = params[0].playDate;
-		int holeNumber = params[0].holeNumber;
+		int maxHoleNumber = params[0].holeNumber;
 
 		GameSetting gameSetting = new GameSetting();
 		PlayerSetting playerSetting = new PlayerSetting();
-		ArrayList<Result> results = null;
+		ArrayList<Result> results = new ArrayList<Result>();
 		UsedHandicap usedHandicap = null;
 
 		HistoryGameSettingDatabaseWorker gameSettingWorker = new HistoryGameSettingDatabaseWorker(
 				context);
-		gameSettingWorker.getGameSetting(playDate, gameSetting);
-
-		HistoryPlayerSettingDatabaseWorker playerSettingWorker = new HistoryPlayerSettingDatabaseWorker(
-				context);
-		playerSettingWorker.getPlayerSetting(playDate, playerSetting);
+		gameSettingWorker.getGameSettingWithResult(playDate, gameSetting,
+				playerSetting, results, maxHoleNumber);
 
 		HistoryResultDatabaseWorker resultWorker = new HistoryResultDatabaseWorker(
 				context);
-		if (holeNumber > WHOLE_HOLE) {
-			results = resultWorker.getResults(playDate, holeNumber);
-		} else {
-			results = resultWorker.getResults(playDate);
-		}
-
 		usedHandicap = resultWorker.getUsedHandicaps(playDate);
 
 		SingleGameResult result = new SingleGameResult();
@@ -89,7 +80,7 @@ public class HistoryQueryTask extends
 		private int holeNumber;
 
 		public QueryParam(String playDate) {
-			this(playDate, WHOLE_HOLE);
+			this(playDate, Constants.WHOLE_HOLE);
 		}
 
 		public QueryParam(String playDate, int holeNumber) {
@@ -99,8 +90,8 @@ public class HistoryQueryTask extends
 	}
 
 	public static interface TaskListener {
-		void onGameQueryStarted();
+		void onCurrentGameQueryStarted();
 
-		void onGameQueryFinished(SingleGameResult gameResult);
+		void onCurrentGameQueryFinished(SingleGameResult gameResult);
 	}
 }

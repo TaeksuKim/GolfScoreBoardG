@@ -2,11 +2,12 @@ package org.dolicoli.android.golfscoreboardg;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
-import org.dolicoli.android.golfscoreboardg.MainActivity.DummySectionFragment;
 import org.dolicoli.android.golfscoreboardg.data.settings.GameSetting;
 import org.dolicoli.android.golfscoreboardg.data.settings.Result;
 import org.dolicoli.android.golfscoreboardg.db.HistoryResultDatabaseWorker;
+import org.dolicoli.android.golfscoreboardg.fragments.DummySectionFragment;
 import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGameActivityPage;
 import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGameGameSettingFragment;
 import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGameHoleResultFragment;
@@ -52,6 +53,7 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 
 	private Button prevButton, nextButton;
 	private int maxHoleNumber = 0;
+	private String playDate;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -64,7 +66,7 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 		setContentView(R.layout.activity_onegame);
 
 		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager());
+				getSupportFragmentManager(), getIntent());
 
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
@@ -87,7 +89,7 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 							| DateUtils.FORMAT_12HOUR);
 			dateTextView.setText(dateString);
 
-			String playDate = GameSetting.toGameIdFormat(date);
+			playDate = GameSetting.toGameIdFormat(date);
 			HistoryResultDatabaseWorker resultWorker = new HistoryResultDatabaseWorker(
 					this);
 			ArrayList<Result> results = resultWorker.getResults(playDate);
@@ -142,6 +144,7 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 
 		Hole hole = navigationAdapter.getItem(itemPosition);
 		setHoleNumber(hole.holeNumber);
+		reload(false);
 
 		setUIState();
 
@@ -151,7 +154,7 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == android.R.id.home) {
-			setResult(0);
+			setResult(Activity.RESULT_CANCELED);
 			finish();
 			return true;
 		}
@@ -201,13 +204,59 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 		});
 	}
 
-	public class SectionsPagerAdapter extends FragmentPagerAdapter {
+	private void setHoleNumber(final int holeNumber) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (mSectionsPagerAdapter == null)
+					return;
+
+				for (int i = 0; i < TAB_COUNT; i++) {
+					OneGameActivityPage fragment = (OneGameActivityPage) mSectionsPagerAdapter
+							.getItem(i);
+					if (fragment != null) {
+						fragment.setHoleNumber(holeNumber);
+					}
+				}
+			}
+		});
+	}
+
+	private void reload(final boolean clean) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (mSectionsPagerAdapter == null)
+					return;
+
+				int count = mSectionsPagerAdapter.getCount();
+				OneGameActivityPage fragment = null;
+				for (int i = 0; i < count; i++) {
+					fragment = (OneGameActivityPage) mSectionsPagerAdapter
+							.getItem(i);
+					if (fragment != null)
+						fragment.reload(clean);
+				}
+			}
+		});
+	}
+
+	private class SectionsPagerAdapter extends FragmentPagerAdapter {
 		OneGameSummaryFragment summaryFragment = new OneGameSummaryFragment();
 		OneGameHoleResultFragment holeResultFragment = new OneGameHoleResultFragment();
 		OneGameGameSettingFragment gameSettingFragment = new OneGameGameSettingFragment();
 
-		public SectionsPagerAdapter(FragmentManager fm) {
+		public SectionsPagerAdapter(FragmentManager fm, Intent intent) {
 			super(fm);
+
+			String playDate = intent
+					.getStringExtra(OneGameActivity.IK_PLAY_DATE);
+			Bundle bundle = new Bundle();
+			bundle.putInt(OneGameActivityPage.BK_MODE,
+					OneGameActivityPage.MODE_HISTORY);
+			bundle.putString(OneGameActivityPage.BK_PLAY_DATE, playDate);
+			summaryFragment.setArguments(bundle);
+			holeResultFragment.setArguments(bundle);
 		}
 
 		@Override
@@ -236,29 +285,18 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 		public CharSequence getPageTitle(int position) {
 			switch (position) {
 			case TAB_SUMMARY_FRAGMENT:
-				return getString(R.string.activity_history_title_section1)
-						.toUpperCase();
+				return getString(R.string.activity_one_game_fragment_summary)
+						.toUpperCase(Locale.US);
 			case TAB_HOLE_RESULT_FRAGMENT:
-				return getString(R.string.activity_history_title_section2)
-						.toUpperCase();
+				return getString(
+						R.string.activity_one_game_fragment_hole_result)
+						.toUpperCase(Locale.US);
 			case TAB_GAME_SETTING_FRAGMENT:
-				return getString(R.string.activity_history_title_section3)
-						.toUpperCase();
+				return getString(
+						R.string.activity_one_game_fragment_game_setting)
+						.toUpperCase(Locale.US);
 			}
 			return null;
-		}
-	}
-
-	private void setHoleNumber(int holeNumber) {
-		if (mSectionsPagerAdapter == null)
-			return;
-
-		for (int i = 0; i < TAB_COUNT; i++) {
-			OneGameActivityPage fragment = (OneGameActivityPage) mSectionsPagerAdapter
-					.getItem(i);
-			if (fragment != null) {
-				fragment.setHoleNumber(holeNumber);
-			}
 		}
 	}
 

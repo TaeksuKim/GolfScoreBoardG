@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <TextView
+        android:id="@+id/NoHistoryTextView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="@string/fragment_attend_count_no_history"
+        android:textAppearance="?attr/textAppearanceLarge"
+        android:visibility="invisible" />
+
+    <android.support.v7.widget.GridLayout
+        android:id="@+id/MainView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/list_selector_holo_light"
+        android:clickable="true"
+        android:focusable="true"
+        app:alignmentMode="alignBounds"
+        app:columnCount="3"
+        app:columnOrderPreserved="false" >
+
+        <TextView
+            android:layout_width="80dp"
+            android:layout_marginBottom="4dp"
+            app:layout_column="0"
+            app:layout_row="0"
+            android:gravity="right|center_vertical"
+            android:text="@string/game"
+            android:textAppearance="?attr/textAppearanceMedium"
+            android:textColor="?attr/secondaryTextColor" />
+
+        <TextView
+            android:id="@+id/GameCountTextView"
+            app:layout_column="1"
+            app:layout_columnSpan="2"
+            app:layout_gravity="fill_horizontal"
+            app:layout_row="0"
+            android:gravity="center"
+            android:textAppearance="?attr/textAppearanceLarge" />
+
+        <TextView
+            android:layout_width="80dp"
+            android:layout_marginBottom="4dp"
+            app:layout_column="0"
+            app:layout_row="1"
+            android:gravity="right|center_vertical"
+            android:text="@string/score"
+            android:textAppearance="?attr/textAppearanceMedium"
+            android:textColor="?attr/secondaryTextColor" />
+
+        <TextView
+            android:id="@+id/TotalFeeSumTextView"
+            app:layout_column="1"
+            app:layout_columnSpan="2"
+            app:layout_gravity="fill_horizontal"
+            app:layout_row="1"
+            android:gravity="center"
+            android:textAppearance="?attr/textAppearanceLarge" />
+
+        <TextView
+            android:layout_marginBottom="4dp"
+            android:layout_marginTop="4dp"
+            app:layout_column="0"
+            app:layout_columnSpan="3"
+            app:layout_gravity="fill_horizontal"
+            app:layout_row="2"
+            android:gravity="center"
+            android:text="@string/fragment_attend_count_click_to_see_detail"
+            android:textAppearance="?attr/textAppearanceSmall"
+            android:textColor="?attr/secondaryTextColor" />
+
+        <TableLayout
+            app:layout_column="0"
+            app:layout_columnSpan="3"
+            app:layout_gravity="fill"
+            app:layout_row="3"
+            android:stretchColumns="*" >
+
+            <TableRow android:layout_marginTop="4dp" >
+
+                <RelativeLayout android:id="@+id/Player1View" >
+
+                    <View
+                        android:id="@+id/Player1TagView"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dip"
+                        android:layout_marginTop="8dip"
+                        android:background="#ccff4444" />
+
+                    <ImageView
+                        android:id="@+id/Player1ImageView"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_marginLeft="8dp"
+                        android:contentDescription="@string/player"
+                        android:src="@drawable/face_unknown_r" />
+
+                    <TextView
+                        android:id="@+id/Player1NameTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dip"
+                        android:layout_alignTop="@+id/Player1ImageView"
+                        android:layout_marginLeft="8dip"
+                        android:layout_marginTop="8dip"
+                        android:layout_toRightOf="@+id/Player1ImageView"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceSmall"
+                        android:textColor="#ffffffff" />
+
+                    <TextView
+                        android:id="@+id/Player1AttendCountTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignLeft="@+id/Player1NameTextView"
+                        android:layout_below="@+id/Player1NameTextView"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceMedium"
+                        android:textColor="?attr/secondaryTextColor" />
+                </RelativeLayout>
+
+                <RelativeLayout android:id="@+id/Player2View" >
+
+                    <View
+                        android:id="@+id/Player2TagView"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dip"
+                        android:layout_marginTop="8dip"
+                        android:background="#ccff4444" />
+
+                    <ImageView
+                        android:id="@+id/Player2ImageView"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_marginLeft="8dp"
+                        android:contentDescription="@string/player"
+                        android:src="@drawable/face_unknown_r" />
+
+                    <TextView
+                        android:id="@+id/Player2NameTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dip"
+                        android:layout_alignTop="@+id/Player2ImageView"
+                        android:layout_marginLeft="8dip"
+                        android:layout_marginTop="8dip"
+                        android:layout_toRightOf="@+id/Player2ImageView"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceSmall"
+                        android:textColor="#ffffffff" />
+
+                    <TextView
+                        android:id="@+id/Player2AttendCountTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignLeft="@+id/Player2NameTextView"
+                        android:layout_below="@+id/Player2NameTextView"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceMedium"
+                        android:textColor="?attr/secondaryTextColor" />
+                </RelativeLayout>
+            </TableRow>
+
+            <TableRow android:layout_marginTop="4dp" >
+
+                <RelativeLayout android:id="@+id/Player3View" >
+
+                    <View
+                        android:id="@+id/Player3TagView"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dip"
+                        android:layout_marginTop="8dip"
+                        android:background="#ccff4444" />
+
+                    <ImageView
+                        android:id="@+id/Player3ImageView"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_marginLeft="8dp"
+                        android:contentDescription="@string/player"
+                        android:src="@drawable/face_unknown_r" />
+
+                    <TextView
+                        android:id="@+id/Player3NameTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dip"
+                        android:layout_alignTop="@+id/Player3ImageView"
+                        android:layout_marginLeft="8dip"
+                        android:layout_marginTop="8dip"
+                        android:layout_toRightOf="@+id/Player3ImageView"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceSmall"
+                        android:textColor="#ffffffff" />
+
+                    <TextView
+                        android:id="@+id/Player3AttendCountTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignLeft="@+id/Player3NameTextView"
+                        android:layout_below="@+id/Player3NameTextView"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceMedium"
+                        android:textColor="?attr/secondaryTextColor" />
+                </RelativeLayout>
+
+                <RelativeLayout android:id="@+id/Player4View" >
+
+                    <View
+                        android:id="@+id/Player4TagView"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dip"
+                        android:layout_marginTop="8dip"
+                        android:background="#ccff4444" />
+
+                    <ImageView
+                        android:id="@+id/Player4ImageView"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_marginLeft="8dp"
+                        android:contentDescription="@string/player"
+                        android:src="@drawable/face_unknown_r" />
+
+                    <TextView
+                        android:id="@+id/Player4NameTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dip"
+                        android:layout_alignTop="@+id/Player4ImageView"
+                        android:layout_marginLeft="8dip"
+                        android:layout_marginTop="8dip"
+                        android:layout_toRightOf="@+id/Player4ImageView"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceSmall"
+                        android:textColor="#ffffffff" />
+
+                    <TextView
+                        android:id="@+id/Player4AttendCountTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignLeft="@+id/Player4NameTextView"
+                        android:layout_below="@+id/Player4NameTextView"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceMedium"
+                        android:textColor="?attr/secondaryTextColor" />
+                </RelativeLayout>
+            </TableRow>
+
+            <TableRow android:layout_marginTop="4dp" >
+
+                <RelativeLayout android:id="@+id/Player5View" >
+
+                    <View
+                        android:id="@+id/Player5TagView"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dip"
+                        android:layout_marginTop="8dip"
+                        android:background="#ccff4444" />
+
+                    <ImageView
+                        android:id="@+id/Player5ImageView"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_marginLeft="8dp"
+                        android:contentDescription="@string/player"
+                        android:src="@drawable/face_unknown_r" />
+
+                    <TextView
+                        android:id="@+id/Player5NameTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dip"
+                        android:layout_alignTop="@+id/Player5ImageView"
+                        android:layout_marginLeft="8dip"
+                        android:layout_marginTop="8dip"
+                        android:layout_toRightOf="@+id/Player5ImageView"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceSmall"
+                        android:textColor="#ffffffff" />
+
+                    <TextView
+                        android:id="@+id/Player5AttendCountTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignLeft="@+id/Player5NameTextView"
+                        android:layout_below="@+id/Player5NameTextView"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceMedium"
+                        android:textColor="?attr/secondaryTextColor" />
+                </RelativeLayout>
+
+                <RelativeLayout android:id="@+id/Player6View" >
+
+                    <View
+                        android:id="@+id/Player6TagView"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dip"
+                        android:layout_marginTop="8dip"
+                        android:background="#ccff4444" />
+
+                    <ImageView
+                        android:id="@+id/Player6ImageView"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_marginLeft="8dp"
+                        android:contentDescription="@string/player"
+                        android:src="@drawable/face_unknown_r" />
+
+                    <TextView
+                        android:id="@+id/Player6NameTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dip"
+                        android:layout_alignTop="@+id/Player6ImageView"
+                        android:layout_marginLeft="8dip"
+                        android:layout_marginTop="8dip"
+                        android:layout_toRightOf="@+id/Player6ImageView"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceSmall"
+                        android:textColor="#ffffffff" />
+
+                    <TextView
+                        android:id="@+id/Player6AttendCountTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignLeft="@+id/Player6NameTextView"
+                        android:layout_below="@+id/Player6NameTextView"
+                        android:gravity="center"
+                        android:textAppearance="?attr/textAppearanceMedium"
+                        android:textColor="?attr/secondaryTextColor" />
+                </RelativeLayout>
+            </TableRow>
+        </TableLayout>
+    </android.support.v7.widget.GridLayout>
+
+</FrameLayout>

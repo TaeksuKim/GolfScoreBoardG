@@ -172,7 +172,7 @@
             android:layout_alignParentTop="true"
             android:layout_margin="4dip"
             android:focusable="false"
-            android:text="개인 통계"
+            android:text="@string/fragment_onegamesummary_personal_statistics"
             android:textAppearance="?attr/textAppearanceSmall" />
 
         <RelativeLayout
@@ -298,10 +298,10 @@
                 android:layout_marginBottom="4dip"
                 android:layout_marginTop="4dip"
                 android:layout_toLeftOf="@+id/PersonalStatisticsButton"
+                android:gravity="center"
                 app:alignmentMode="alignBounds"
                 app:columnCount="4"
-                app:columnOrderPreserved="false"
-                android:gravity="center" >
+                app:columnOrderPreserved="false" >
 
                 <TextView
                     android:id="@+id/HandicapTitleTextView"
@@ -309,7 +309,7 @@
                     android:layout_height="24dip"
                     android:layout_marginRight="4dip"
                     android:gravity="center"
-                    android:text="@string/fragment_current_score_handicap"
+                    android:text="@string/handicap"
                     android:textAppearance="?attr/textAppearanceSmall"
                     android:textColor="?attr/secondaryTextColor" />
 
@@ -329,7 +329,7 @@
                     android:layout_marginLeft="8dip"
                     android:layout_marginRight="4dip"
                     android:gravity="center"
-                    android:text="@string/fragment_current_score_remain_handicap"
+                    android:text="@string/remain_handicap"
                     android:textAppearance="?attr/textAppearanceSmall"
                     android:textColor="?attr/secondaryTextColor" />
 

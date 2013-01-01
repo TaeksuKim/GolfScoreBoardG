@@ -32,7 +32,7 @@
             android:layout_marginBottom="4dip"
             android:layout_marginTop="4dip"
             android:gravity="center"
-            android:text="경기"
+            android:text="@string/game"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
@@ -56,7 +56,7 @@
             android:layout_marginTop="4dip"
             android:layout_toRightOf="@+id/AttendCountTextView"
             android:gravity="center"
-            android:text="총금액"
+            android:text="@string/fragment_personal_statistics_summary_total_fee"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
@@ -90,7 +90,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/MainView"
         android:layout_centerHorizontal="true"
-        app:layout_gravity="center"
+        android:layout_gravity="center"
         android:background="@drawable/list_selector_holo_light"
         android:clickable="false"
         android:focusable="false"
@@ -102,221 +102,221 @@
         app:useDefaultMargins="false" >
 
         <TextView
-            android:layout_gravity="center"
             android:layout_marginBottom="4dip"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
             android:layout_marginTop="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
-            android:text="평균순위"
+            android:text="@string/fragment_personal_statistics_summary_avg_ranking"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/AvgRankingTextView"
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceMedium" />
 
         <TextView
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
-            android:text="최고"
+            android:text="@string/fragment_personal_statistics_summary_max"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/MinRankingTextView"
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceSmall" />
 
         <TextView
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
-            android:text="최저"
+            android:text="@string/fragment_personal_statistics_summary_min"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/MaxRankingTextView"
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceSmall" />
 
         <TextView
-            android:layout_gravity="center"
             android:layout_marginBottom="4dip"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
             android:layout_marginTop="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
-            android:text="1 위"
+            android:text="@string/fragment_personal_statistics_summary_first_standing"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/FirstStandTextView"
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/FirstStandRateTextView"
-            android:layout_gravity="left|center_vertical"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
             app:layout_columnSpan="4"
+            app:layout_gravity="left|center_vertical"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceMedium" />
 
         <TextView
-            android:layout_gravity="center"
             android:layout_marginBottom="4dip"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
             android:layout_marginTop="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
-            android:text="최하위"
+            android:text="@string/fragment_personal_statistics_summary_last_standing"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/LastStandTextView"
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/LastStandRateTextView"
-            android:layout_gravity="left|center_vertical"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
             app:layout_columnSpan="4"
+            app:layout_gravity="left|center_vertical"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceMedium" />
 
         <TextView
-            android:layout_gravity="center"
             android:layout_marginBottom="4dip"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
             android:layout_marginTop="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
-            android:text="평균타수"
+            android:text="@string/fragment_personal_statistics_summary_avg_score"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/AvgStrokeCountTextView"
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceMedium" />
 
         <TextView
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
-            android:text="최고"
+            android:text="@string/fragment_personal_statistics_summary_max"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/MinStrokeCountTextView"
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceSmall" />
 
         <TextView
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
-            android:text="최저"
+            android:text="@string/fragment_personal_statistics_summary_min"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/MaxStrokeCountTextView"
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceSmall" />
 
         <TextView
-            android:layout_gravity="center"
             android:layout_marginBottom="4dip"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
             android:layout_marginTop="4dip"
+            app:layout_gravity="center"
             app:layout_rowSpan="2"
             android:gravity="center"
-            android:text="평균금액"
+            android:text="@string/fragment_personal_statistics_summary_avg_fee"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/AvgFeeTextView"
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             app:layout_rowSpan="2"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceMedium" />
 
         <TextView
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
-            android:text="최고"
+            android:text="@string/fragment_personal_statistics_summary_max"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/MinFeeTextView"
-            android:layout_gravity="left|center_vertical"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
             app:layout_columnSpan="3"
+            app:layout_gravity="left|center_vertical"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceSmall" />
 
         <TextView
-            android:layout_gravity="center"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
+            app:layout_gravity="center"
             android:gravity="center"
-            android:text="최저"
+            android:text="@string/fragment_personal_statistics_summary_min"
             android:textAppearance="?attr/textAppearanceSmall"
             android:textColor="?attr/secondaryTextColor" />
 
         <TextView
             android:id="@+id/MaxFeeTextView"
-            android:layout_gravity="left|center_vertical"
             android:layout_marginLeft="4dip"
             android:layout_marginRight="4dip"
             app:layout_columnSpan="3"
+            app:layout_gravity="left|center_vertical"
             android:gravity="center"
             android:textAppearance="?attr/textAppearanceSmall" />
     </android.support.v7.widget.GridLayout>

@@ -6,10 +6,5 @@
         holo:key="@string/preference_always_turn_on_key"
         holo:summary="@string/preference_always_turn_on_summary"
         holo:title="@string/preference_always_turn_on_title" />
-    <CheckBoxPreference
-        holo:defaultValue="true"
-        holo:key="@string/preference_auto_upload_key"
-        holo:summary="@string/preference_auto_upload_summary"
-        holo:title="@string/preference_auto_upload_title" />
 
 </PreferenceScreen>

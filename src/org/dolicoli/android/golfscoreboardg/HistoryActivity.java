@@ -2,10 +2,10 @@ package org.dolicoli.android.golfscoreboardg;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-import org.dolicoli.android.golfscoreboardg.MainActivity.DummySectionFragment;
 import org.dolicoli.android.golfscoreboardg.data.GameAndResult;
-import org.dolicoli.android.golfscoreboardg.db.HistoryGameSettingDatabaseWorker;
+import org.dolicoli.android.golfscoreboardg.fragments.DummySectionFragment;
 import org.dolicoli.android.golfscoreboardg.fragments.history.GameResultHistoryFragment;
 import org.dolicoli.android.golfscoreboardg.fragments.history.HistoryDataContainer;
 import org.dolicoli.android.golfscoreboardg.fragments.history.HistoryDataFragment;
@@ -16,7 +16,6 @@ import org.dolicoli.android.golfscoreboardg.utils.DateRangeUtil;
 import org.dolicoli.android.golfscoreboardg.utils.DateRangeUtil.DateRange;
 import org.holoeverywhere.ArrayAdapter;
 import org.holoeverywhere.app.Activity;
-import org.holoeverywhere.app.AlertDialog;
 import org.holoeverywhere.app.Fragment;
 import org.holoeverywhere.preference.PreferenceManager;
 import org.holoeverywhere.preference.SharedPreferences;
@@ -24,7 +23,6 @@ import org.holoeverywhere.widget.AdapterView;
 import org.holoeverywhere.widget.AdapterView.OnItemSelectedListener;
 import org.holoeverywhere.widget.ProgressBar;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -38,7 +36,6 @@ import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-
 
 public class HistoryActivity extends Activity implements OnPageChangeListener,
 		HistoryDataContainer, GameAndResultTaskListener,
@@ -122,14 +119,17 @@ public class HistoryActivity extends Activity implements OnPageChangeListener,
 	}
 
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
-		GameResultHistoryFragment gameResultHistoryFragment = new GameResultHistoryFragment();
-		PlayerRankingFragment playerRankingFragment = new PlayerRankingFragment();
+		GameResultHistoryFragment gameResultHistoryFragment = null;
+		PlayerRankingFragment playerRankingFragment = null;
 
 		public SectionsPagerAdapter(HistoryDataContainer container,
 				FragmentManager fm) {
 			super(fm);
 
+			gameResultHistoryFragment = new GameResultHistoryFragment();
 			gameResultHistoryFragment.setDataContainer(container);
+
+			playerRankingFragment = new PlayerRankingFragment();
 			playerRankingFragment.setDataContainer(container);
 		}
 
@@ -157,9 +157,13 @@ public class HistoryActivity extends Activity implements OnPageChangeListener,
 		public CharSequence getPageTitle(int position) {
 			switch (position) {
 			case TAB_GAME_RESULT_HISTORY_FRAGMENT:
-				return getString(R.string.title_section3).toUpperCase();
+				return getString(
+						R.string.activity_history_fragment_game_result_history)
+						.toUpperCase(Locale.US);
 			case TAB_PLAYER_RANKING_FRAGMENT:
-				return "Ελ°θ".toUpperCase();
+				return getString(
+						R.string.activity_history_fragment_player_ranking)
+						.toUpperCase(Locale.US);
 			}
 			return null;
 		}
@@ -335,29 +339,5 @@ public class HistoryActivity extends Activity implements OnPageChangeListener,
 	}
 
 	public void deleteHistory(final List<String> playDates) {
-		final HistoryGameSettingDatabaseWorker gameSettingWorker = new HistoryGameSettingDatabaseWorker(
-				this);
-
-		final int selectionCount = playDates.size();
-		if (selectionCount > 0) {
-			new AlertDialog.Builder(this)
-					.setTitle(R.string.activity_result_history_delete)
-					.setMessage(
-							getString(
-									R.string.activity_result_history_are_you_sure_to_delete,
-									selectionCount))
-					.setPositiveButton(android.R.string.yes,
-							new DialogInterface.OnClickListener() {
-
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									gameSettingWorker.clearHistories(playDates);
-									reloadData();
-								}
-
-							}).setNegativeButton(android.R.string.no, null)
-					.show();
-		}
 	}
 }

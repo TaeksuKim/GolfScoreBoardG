@@ -1,37 +1,42 @@
 package org.dolicoli.android.golfscoreboardg.fragments.onegame;
 
-import java.text.DecimalFormat;
-
 import org.dolicoli.android.golfscoreboardg.Constants;
 import org.dolicoli.android.golfscoreboardg.OneGameActivity;
 import org.dolicoli.android.golfscoreboardg.R;
 import org.dolicoli.android.golfscoreboardg.data.SingleGameResult;
-import org.dolicoli.android.golfscoreboardg.tasks.SimpleHistoryQueryTask2;
+import org.dolicoli.android.golfscoreboardg.tasks.HistoryGameSettingQueryTask;
+import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.Fragment;
-import org.holoeverywhere.widget.TextView;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 public class OneGameGameSettingFragment extends Fragment implements
-		OneGameActivityPage, SimpleHistoryQueryTask2.TaskListener {
+		OneGameActivityPage, HistoryGameSettingQueryTask.TaskListener {
 
 	@SuppressWarnings("unused")
 	private static final String TAG = "OneGameGameSettingFragment";
 
 	private TextView holeCountTextView, playerCountTextView;
-	private TextView holeFeeTextView, rankingFeeTextView, perHoleFeeTextView;
+	private TextView totalFeeTextView, holeFeeTextView, rankingFeeTextView,
+			perHoleFeeTextView;
 	private TextView[] holeFeePerRankingTextViews;
 	private TextView[] rankingFeePerRankingTextViews;
 	private View[] holeFeePerRankingTitleTextViews;
 	private View[] rankingFeePerRankingTitleTextViews;
 
 	private String playDate;
-	private DecimalFormat feeFormat;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		playDate = "";
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -44,6 +49,7 @@ public class OneGameGameSettingFragment extends Fragment implements
 		playerCountTextView = (TextView) view
 				.findViewById(R.id.PlayerCountTextView);
 
+		totalFeeTextView = (TextView) view.findViewById(R.id.TotalFeeTextView);
 		holeFeeTextView = (TextView) view.findViewById(R.id.HoleFeeTextView);
 		rankingFeeTextView = (TextView) view
 				.findViewById(R.id.RankingFeeTextView);
@@ -116,25 +122,15 @@ public class OneGameGameSettingFragment extends Fragment implements
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		feeFormat = new DecimalFormat(getString(R.string.fee_format));
-		reload();
+		reload(false);
 	}
 
 	@Override
-	public void onResume() {
-		super.onResume();
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-	}
-
-	private void reload() {
+	public void reload(boolean clean) {
 		if (getActivity() == null || playDate == null)
 			return;
 
-		SimpleHistoryQueryTask2 task = new SimpleHistoryQueryTask2(
+		HistoryGameSettingQueryTask task = new HistoryGameSettingQueryTask(
 				getActivity(), this);
 		task.execute(playDate);
 	}
@@ -157,11 +153,10 @@ public class OneGameGameSettingFragment extends Fragment implements
 		int playerCount = gameResult.getPlayerCount();
 
 		holeCountTextView.setText(getString(
-				R.string.fragment_history_gamesetting_hole_count_format,
+				R.string.fragment_one_game_gamesetting_hole_count_format,
 				holeCount));
-		playerCountTextView.setText(getString(
-				R.string.fragment_history_gamesetting_player_count_format,
-				playerCount));
+		UIUtil.setPlayerCountTextView(activity, playerCountTextView,
+				playerCount);
 
 		int holeFee = gameResult.getHoleFee();
 		int rankingFee = gameResult.getRankingFee();
@@ -170,15 +165,17 @@ public class OneGameGameSettingFragment extends Fragment implements
 			perHoleFee += gameResult.getHoleFeeForRanking(i);
 		}
 
-		holeFeeTextView.setText(feeFormat.format(holeFee));
-		rankingFeeTextView.setText(feeFormat.format(rankingFee));
-		perHoleFeeTextView.setText(feeFormat.format(perHoleFee));
+		totalFeeTextView.setText(UIUtil.formatFee(activity, holeFee
+				+ rankingFee));
+		holeFeeTextView.setText(UIUtil.formatFee(activity, holeFee));
+		rankingFeeTextView.setText(UIUtil.formatFee(activity, rankingFee));
+		perHoleFeeTextView.setText(UIUtil.formatFee(activity, perHoleFee));
 
 		for (int i = 0; i < Constants.MAX_PLAYER_COUNT; i++) {
-			holeFeePerRankingTextViews[i].setText(feeFormat.format(gameResult
-					.getHoleFeeForRanking(i + 1)));
-			rankingFeePerRankingTextViews[i].setText(feeFormat
-					.format(gameResult.getRankingFeeForRanking(i + 1)));
+			holeFeePerRankingTextViews[i].setText(UIUtil.formatFee(activity,
+					gameResult.getHoleFeeForRanking(i + 1)));
+			rankingFeePerRankingTextViews[i].setText(UIUtil.formatFee(activity,
+					gameResult.getRankingFeeForRanking(i + 1)));
 
 			int remain = playerCount % 2;
 			if (i < playerCount) {
