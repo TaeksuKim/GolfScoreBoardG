@@ -8,8 +8,8 @@ import java.util.HashMap;
 import org.dolicoli.android.golfscoreboardg.Constants;
 import org.dolicoli.android.golfscoreboardg.HistoryActivity;
 import org.dolicoli.android.golfscoreboardg.R;
-import org.dolicoli.android.golfscoreboardg.Reloadable;
 import org.dolicoli.android.golfscoreboardg.data.GameAndResult;
+import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGameActivityPage;
 import org.dolicoli.android.golfscoreboardg.tasks.HistoryGameSettingRangeQueryTask;
 import org.dolicoli.android.golfscoreboardg.tasks.ThreeMonthsGameReceiveTask;
 import org.dolicoli.android.golfscoreboardg.tasks.ThreeMonthsGameReceiveTask.ReceiveProgress;
@@ -20,11 +20,12 @@ import org.dolicoli.android.golfscoreboardg.utils.PlayerUIUtil;
 import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.Activity;
+import org.holoeverywhere.app.AlertDialog;
 import org.holoeverywhere.app.Fragment;
 import org.holoeverywhere.app.ProgressDialog;
+import org.holoeverywhere.widget.TextView;
 import org.holoeverywhere.widget.Toast;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -33,14 +34,14 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
-public class AttendCountFragment extends Fragment implements Reloadable,
-		OnClickListener, HistoryGameSettingRangeQueryTask.TaskListener,
+public class AttendCountFragment extends Fragment implements
+		OneGameActivityPage, OnClickListener,
+		HistoryGameSettingRangeQueryTask.TaskListener,
 		ThreeMonthsGameReceiveTask.TaskListener {
 
 	@SuppressWarnings("unused")
@@ -196,11 +197,15 @@ public class AttendCountFragment extends Fragment implements Reloadable,
 		if (activity == null)
 			return;
 
-		DateRange dateRange = DateRangeUtil.getDateRange(3);
+		DateRange dateRange = DateRangeUtil.getDateRange(2);
 
 		HistoryGameSettingRangeQueryTask task = new HistoryGameSettingRangeQueryTask(
 				activity, this);
 		task.execute(dateRange);
+	}
+
+	@Override
+	public void setHoleNumber(int holeNumber) {
 	}
 
 	@Override

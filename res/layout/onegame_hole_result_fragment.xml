@@ -23,7 +23,7 @@
 
         <TextView
             android:id="@+id/SumOfTotalFeeTextView"
-            android:layout_width="95dip"
+            android:layout_width="110dp"
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/ModifyFeeSettingButton"
             android:layout_gravity="center_vertical"
@@ -36,7 +36,7 @@
 
         <TextView
             android:id="@+id/TotalTotalFeeTextView"
-            android:layout_width="95dip"
+            android:layout_width="110dp"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/ModifyFeeSettingButton"
             android:layout_toLeftOf="@+id/ModifyFeeSettingButton"
@@ -46,7 +46,7 @@
 
         <TextView
             android:id="@+id/SumOfHoleFeeTextView"
-            android:layout_width="95dip"
+            android:layout_width="110dp"
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@+id/SumOfTotalFeeTextView"
             android:layout_gravity="center_vertical"
@@ -58,7 +58,7 @@
 
         <TextView
             android:id="@+id/TotalHoleFeeTextView"
-            android:layout_width="95dip"
+            android:layout_width="110dp"
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@+id/TotalTotalFeeTextView"
             android:layout_toLeftOf="@+id/SumOfTotalFeeTextView"

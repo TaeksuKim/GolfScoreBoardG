@@ -72,7 +72,7 @@ public class PersonalStatisticsActivity extends Activity implements
 
 		gameAndResults = new ArrayList<GameAndResult>();
 
-		DateRange dateRange = DateRangeUtil.getDateRange(3);
+		DateRange dateRange = DateRangeUtil.getDateRange(2);
 		GameAndResultTask task = new GameAndResultTask(this, this);
 		task.execute(dateRange);
 
