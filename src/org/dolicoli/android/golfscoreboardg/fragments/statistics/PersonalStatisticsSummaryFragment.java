@@ -3,11 +3,11 @@ package org.dolicoli.android.golfscoreboardg.fragments.statistics;
 import java.util.ArrayList;
 
 import org.dolicoli.android.golfscoreboardg.R;
-import org.dolicoli.android.golfscoreboardg.Reloadable;
-import org.dolicoli.android.golfscoreboardg.data.GameAndResult;
+import org.dolicoli.android.golfscoreboardg.data.OneGame;
 import org.dolicoli.android.golfscoreboardg.data.PlayerScore;
 import org.dolicoli.android.golfscoreboardg.utils.DateRangeUtil;
 import org.dolicoli.android.golfscoreboardg.utils.DateRangeUtil.DateRange;
+import org.dolicoli.android.golfscoreboardg.utils.Reloadable;
 import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.Fragment;
@@ -24,7 +24,7 @@ public class PersonalStatisticsSummaryFragment extends Fragment implements
 		Reloadable, OnClickListener {
 
 	private PersonalStatisticsDataContainer dataContainer;
-	private ArrayList<GameAndResult> gameAndResults;
+	private ArrayList<OneGame> gameAndResults;
 	private String playerName;
 
 	private View recent5MainView, recent5DetailView;
@@ -321,7 +321,7 @@ public class PersonalStatisticsSummaryFragment extends Fragment implements
 		DateRange thisMonthRange = DateRangeUtil.getMonthlyDateRange(0);
 		DateRange lastMonthRange = DateRangeUtil.getMonthlyDateRange(1);
 
-		for (GameAndResult gameAndResult : gameAndResults) {
+		for (OneGame gameAndResult : gameAndResults) {
 			if (!gameAndResult.containsPlayerScore(playerName))
 				continue;
 
@@ -329,7 +329,7 @@ public class PersonalStatisticsSummaryFragment extends Fragment implements
 			int ranking = playerScore.getRanking();
 			boolean lastStanding = playerScore.isLastStanding();
 			int fee = playerScore.getAdjustedTotalFee();
-			int score = playerScore.getOriginalScore();
+			int score = playerScore.getOriginalScoreInEighteenHole();
 
 			if (recent5Count < 5) {
 				recent5RankingSum += ranking;
@@ -373,7 +373,7 @@ public class PersonalStatisticsSummaryFragment extends Fragment implements
 				recent5Count++;
 			}
 
-			long date = gameAndResult.getGameSetting().getDate().getTime();
+			long date = gameAndResult.getDate().getTime();
 			if (date >= thisMonthRange.getFrom()) {
 				month1RankingSum += ranking;
 

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
 
-import org.dolicoli.android.golfscoreboardg.data.GameAndResult;
+import org.dolicoli.android.golfscoreboardg.data.OneGame;
 import org.dolicoli.android.golfscoreboardg.fragments.DummySectionFragment;
 import org.dolicoli.android.golfscoreboardg.fragments.statistics.PersonalStatisticsDataContainer;
 import org.dolicoli.android.golfscoreboardg.fragments.statistics.PersonalStatisticsGameResultListFragment;
@@ -14,6 +14,7 @@ import org.dolicoli.android.golfscoreboardg.tasks.GameAndResultTask.GameAndResul
 import org.dolicoli.android.golfscoreboardg.utils.DateRangeUtil;
 import org.dolicoli.android.golfscoreboardg.utils.DateRangeUtil.DateRange;
 import org.dolicoli.android.golfscoreboardg.utils.PlayerUIUtil;
+import org.dolicoli.android.golfscoreboardg.utils.Reloadable;
 import org.holoeverywhere.app.Activity;
 import org.holoeverywhere.app.Fragment;
 import org.holoeverywhere.preference.PreferenceManager;
@@ -46,7 +47,7 @@ public class PersonalStatisticsActivity extends Activity implements
 
 	private String playerName;
 	private int playerImageResourceId;
-	private ArrayList<GameAndResult> gameAndResults;
+	private ArrayList<OneGame> gameAndResults;
 
 	private ImageView playerImageView;
 	private SectionsPagerAdapter mSectionsPagerAdapter;
@@ -70,7 +71,7 @@ public class PersonalStatisticsActivity extends Activity implements
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
 
-		gameAndResults = new ArrayList<GameAndResult>();
+		gameAndResults = new ArrayList<OneGame>();
 
 		DateRange dateRange = DateRangeUtil.getDateRange(2);
 		GameAndResultTask task = new GameAndResultTask(this, this);
@@ -125,7 +126,7 @@ public class PersonalStatisticsActivity extends Activity implements
 	}
 
 	@Override
-	public ArrayList<GameAndResult> getGameAndResults() {
+	public ArrayList<OneGame> getGameAndResults() {
 		return gameAndResults;
 	}
 
@@ -137,9 +138,9 @@ public class PersonalStatisticsActivity extends Activity implements
 	}
 
 	@Override
-	public void onGameAndResultFinished(GameAndResult[] results) {
+	public void onGameAndResultFinished(OneGame[] results) {
 		gameAndResults.clear();
-		for (GameAndResult result : results) {
+		for (OneGame result : results) {
 			gameAndResults.add(result);
 		}
 		Collections.sort(gameAndResults);

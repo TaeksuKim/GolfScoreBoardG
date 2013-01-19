@@ -3,7 +3,7 @@ package org.dolicoli.android.golfscoreboardg.fragments.currentgame;
 import java.util.ArrayList;
 
 import org.dolicoli.android.golfscoreboardg.Constants;
-import org.dolicoli.android.golfscoreboardg.InputFragmentListener;
+import org.dolicoli.android.golfscoreboardg.CurrentGameNewGameSettingActivity;
 import org.dolicoli.android.golfscoreboardg.R;
 import org.dolicoli.android.golfscoreboardg.data.PlayerCache;
 import org.dolicoli.android.golfscoreboardg.db.PlayerCacheDatabaseWorker;
@@ -184,10 +184,9 @@ public class NewPlayerSettingFragment extends Fragment implements
 	private void showInputPlayerNameDialog(final Spinner spinner) {
 		AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
-		alert.setTitle("이름");
-		alert.setMessage("이름을 입력하세요.");
+		alert.setTitle(R.string.dialog_add_name_title);
+		alert.setMessage(R.string.dialog_please_insert_name);
 
-		// Set an EditText view to get user input
 		final EditText input = new EditText(getActivity());
 		alert.setView(input);
 
@@ -236,7 +235,7 @@ public class NewPlayerSettingFragment extends Fragment implements
 				.getStringArray(R.array.DefaultCachedPlayerNames);
 		ArrayList<String> names = new ArrayList<String>();
 
-		names.add("이름 선택");
+		names.add(getString(R.string.fragment_game_setting_select_player_name));
 		for (String name : defaultCachedPlayerNames) {
 			if (names.contains(name))
 				continue;
@@ -257,7 +256,7 @@ public class NewPlayerSettingFragment extends Fragment implements
 	}
 
 	private void inputDataChanged() {
-		WizardWindow activity = ((WizardWindow) getActivity());
+		CurrentGameNewGameSettingActivity activity = ((CurrentGameNewGameSettingActivity) getActivity());
 		if (activity == null)
 			return;
 
@@ -266,9 +265,8 @@ public class NewPlayerSettingFragment extends Fragment implements
 	}
 
 	private static class PlayerNameSpinnerAdapter extends ArrayAdapter<String> {
-
 		public PlayerNameSpinnerAdapter(Context context) {
-			super(context, R.layout.simple_spinner_dropdown_item);
+			super(context, android.R.layout.simple_list_item_1);
 		}
 
 	}

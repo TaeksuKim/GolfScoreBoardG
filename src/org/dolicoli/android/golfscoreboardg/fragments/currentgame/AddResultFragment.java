@@ -1,9 +1,8 @@
 package org.dolicoli.android.golfscoreboardg.fragments.currentgame;
 
+import org.dolicoli.android.golfscoreboardg.AddResultActivity;
 import org.dolicoli.android.golfscoreboardg.Constants;
-import org.dolicoli.android.golfscoreboardg.InputFragmentListener;
 import org.dolicoli.android.golfscoreboardg.R;
-import org.dolicoli.android.golfscoreboardg.data.UsedHandicap;
 import org.dolicoli.android.golfscoreboardg.data.settings.GameSetting;
 import org.dolicoli.android.golfscoreboardg.data.settings.PlayerSetting;
 import org.dolicoli.android.golfscoreboardg.db.GameSettingDatabaseWorker;
@@ -24,13 +23,11 @@ import android.view.ViewGroup;
 
 public class AddResultFragment extends Fragment implements OnClickListener {
 
-	private static final int SPINNER_DROPDOWN_ITEM = R.layout.simple_spinner_dropdown_item;
-
 	private int playerCount;
-	private int holeNumber;
+	private int holeNumber, gameMaxHoleNumber;
 	private ScoreSpinnerAdapter[] playerScoreSpinnerAdapters;
 	private HandicapSpinnerAdapter[] playerHandicapSpinnerAdapters;
-	private UsedHandicap usedHandicaps;
+	private int[] usedHandicaps;
 
 	private RadioButton parThreeRadioButton, parFourRadioButton,
 			parFiveRadioButton, parSixRadioButton;
@@ -63,37 +60,37 @@ public class AddResultFragment extends Fragment implements OnClickListener {
 		Spinner player1ScoreSpinner = (Spinner) view
 				.findViewById(R.id.Player1ScoreSpinner);
 		ScoreSpinnerAdapter player1ScoreSpinnerAdapter = new ScoreSpinnerAdapter(
-				view.getContext(), SPINNER_DROPDOWN_ITEM);
+				view.getContext(), R.layout.simple_spinner_dropdown_item);
 		player1ScoreSpinner.setAdapter(player1ScoreSpinnerAdapter);
 
 		Spinner player2ScoreSpinner = (Spinner) view
 				.findViewById(R.id.Player2ScoreSpinner);
 		ScoreSpinnerAdapter player2ScoreSpinnerAdapter = new ScoreSpinnerAdapter(
-				view.getContext(), SPINNER_DROPDOWN_ITEM);
+				view.getContext(), R.layout.simple_spinner_dropdown_item);
 		player2ScoreSpinner.setAdapter(player2ScoreSpinnerAdapter);
 
 		Spinner player3ScoreSpinner = (Spinner) view
 				.findViewById(R.id.Player3ScoreSpinner);
 		ScoreSpinnerAdapter player3ScoreSpinnerAdapter = new ScoreSpinnerAdapter(
-				view.getContext(), SPINNER_DROPDOWN_ITEM);
+				view.getContext(), R.layout.simple_spinner_dropdown_item);
 		player3ScoreSpinner.setAdapter(player3ScoreSpinnerAdapter);
 
 		Spinner player4ScoreSpinner = (Spinner) view
 				.findViewById(R.id.Player4ScoreSpinner);
 		ScoreSpinnerAdapter player4ScoreSpinnerAdapter = new ScoreSpinnerAdapter(
-				view.getContext(), SPINNER_DROPDOWN_ITEM);
+				view.getContext(), R.layout.simple_spinner_dropdown_item);
 		player4ScoreSpinner.setAdapter(player4ScoreSpinnerAdapter);
 
 		Spinner player5ScoreSpinner = (Spinner) view
 				.findViewById(R.id.Player5ScoreSpinner);
 		ScoreSpinnerAdapter player5ScoreSpinnerAdapter = new ScoreSpinnerAdapter(
-				view.getContext(), SPINNER_DROPDOWN_ITEM);
+				view.getContext(), R.layout.simple_spinner_dropdown_item);
 		player5ScoreSpinner.setAdapter(player5ScoreSpinnerAdapter);
 
 		Spinner player6ScoreSpinner = (Spinner) view
 				.findViewById(R.id.Player6ScoreSpinner);
 		ScoreSpinnerAdapter player6ScoreSpinnerAdapter = new ScoreSpinnerAdapter(
-				view.getContext(), SPINNER_DROPDOWN_ITEM);
+				view.getContext(), R.layout.simple_spinner_dropdown_item);
 		player6ScoreSpinner.setAdapter(player6ScoreSpinnerAdapter);
 
 		playerScoreSpinnerAdapters = new ScoreSpinnerAdapter[Constants.MAX_PLAYER_COUNT];
@@ -115,37 +112,37 @@ public class AddResultFragment extends Fragment implements OnClickListener {
 		Spinner player1HandicapSpinner = (Spinner) view
 				.findViewById(R.id.Player1HandicapSpinner);
 		HandicapSpinnerAdapter player1HandicapSpinnerAdapter = new HandicapSpinnerAdapter(
-				view.getContext(), SPINNER_DROPDOWN_ITEM);
+				view.getContext(), R.layout.simple_spinner_dropdown_item);
 		player1HandicapSpinner.setAdapter(player1HandicapSpinnerAdapter);
 
 		Spinner player2HandicapSpinner = (Spinner) view
 				.findViewById(R.id.Player2HandicapSpinner);
 		HandicapSpinnerAdapter player2HandicapSpinnerAdapter = new HandicapSpinnerAdapter(
-				view.getContext(), SPINNER_DROPDOWN_ITEM);
+				view.getContext(), R.layout.simple_spinner_dropdown_item);
 		player2HandicapSpinner.setAdapter(player2HandicapSpinnerAdapter);
 
 		Spinner player3HandicapSpinner = (Spinner) view
 				.findViewById(R.id.Player3HandicapSpinner);
 		HandicapSpinnerAdapter player3HandicapSpinnerAdapter = new HandicapSpinnerAdapter(
-				view.getContext(), SPINNER_DROPDOWN_ITEM);
+				view.getContext(), R.layout.simple_spinner_dropdown_item);
 		player3HandicapSpinner.setAdapter(player3HandicapSpinnerAdapter);
 
 		Spinner player4HandicapSpinner = (Spinner) view
 				.findViewById(R.id.Player4HandicapSpinner);
 		HandicapSpinnerAdapter player4HandicapSpinnerAdapter = new HandicapSpinnerAdapter(
-				view.getContext(), SPINNER_DROPDOWN_ITEM);
+				view.getContext(), R.layout.simple_spinner_dropdown_item);
 		player4HandicapSpinner.setAdapter(player4HandicapSpinnerAdapter);
 
 		Spinner player5HandicapSpinner = (Spinner) view
 				.findViewById(R.id.Player5HandicapSpinner);
 		HandicapSpinnerAdapter player5HandicapSpinnerAdapter = new HandicapSpinnerAdapter(
-				view.getContext(), SPINNER_DROPDOWN_ITEM);
+				view.getContext(), R.layout.simple_spinner_dropdown_item);
 		player5HandicapSpinner.setAdapter(player5HandicapSpinnerAdapter);
 
 		Spinner player6HandicapSpinner = (Spinner) view
 				.findViewById(R.id.Player6HandicapSpinner);
 		HandicapSpinnerAdapter player6HandicapSpinnerAdapter = new HandicapSpinnerAdapter(
-				view.getContext(), SPINNER_DROPDOWN_ITEM);
+				view.getContext(), R.layout.simple_spinner_dropdown_item);
 		player6HandicapSpinner.setAdapter(player6HandicapSpinnerAdapter);
 
 		playerHandicapSpinnerAdapters = new HandicapSpinnerAdapter[Constants.MAX_PLAYER_COUNT];
@@ -225,14 +222,20 @@ public class AddResultFragment extends Fragment implements OnClickListener {
 				getActivity());
 		int maxHoleNumber = resultWorker.getMaxHoleNumber();
 		holeNumber = maxHoleNumber + 1;
-		if (holeNumber > gameSetting.getHoleCount()) {
-			holeNumberTextView.setText("Hole - ");
+		gameMaxHoleNumber = gameSetting.getHoleCount();
+		if (holeNumber > gameMaxHoleNumber) {
+			holeNumberTextView
+					.setText(R.string.fragment_addresult_no_hole_number);
+
 			holeNumber = -1;
 		} else {
-			holeNumberTextView.setText("Hole " + holeNumber);
+			holeNumberTextView
+					.setText(getString(
+							R.string.fragment_addresult_hole_number_format,
+							holeNumber));
 		}
 
-		((InputFragmentListener) getActivity()).inputDataChanged();
+		((AddResultActivity) getActivity()).inputDataChanged();
 	}
 
 	@Override
@@ -273,7 +276,7 @@ public class AddResultFragment extends Fragment implements OnClickListener {
 	}
 
 	public boolean isAllFieldValid() {
-		return (holeNumber > 0);
+		return (holeNumber > 0 && holeNumber <= gameMaxHoleNumber);
 	}
 
 	private void fillScoreSpinner(Spinner spinner, ScoreSpinnerAdapter adapter) {
@@ -370,7 +373,7 @@ public class AddResultFragment extends Fragment implements OnClickListener {
 
 	private void fillHandicapSpinner(PlayerSetting playerSetting, int playerId) {
 		int remainedHandicap = playerSetting.getHandicap(playerId)
-				- usedHandicaps.getUsedHandicap(playerId);
+				- usedHandicaps[playerId];
 
 		HandicapSpinnerAdapter adapter = playerHandicapSpinnerAdapters[playerId];
 		adapter.clear();

@@ -1,19 +1,18 @@
-package org.dolicoli.android.golfscoreboardg.fragments.history;
+package org.dolicoli.android.golfscoreboardg.fragments.main;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 
 import org.dolicoli.android.golfscoreboardg.Constants;
+import org.dolicoli.android.golfscoreboardg.GolfScoreBoardApplication;
 import org.dolicoli.android.golfscoreboardg.OneGameActivity;
 import org.dolicoli.android.golfscoreboardg.R;
-import org.dolicoli.android.golfscoreboardg.data.GameAndResult;
+import org.dolicoli.android.golfscoreboardg.data.OneGame;
 import org.dolicoli.android.golfscoreboardg.data.PlayerScore;
 import org.dolicoli.android.golfscoreboardg.data.settings.GameSetting;
-import org.dolicoli.android.golfscoreboardg.data.settings.PlayerSetting;
 import org.dolicoli.android.golfscoreboardg.utils.PlayerUIUtil;
+import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.holoeverywhere.ArrayAdapter;
 import org.holoeverywhere.LayoutInflater;
-import org.holoeverywhere.app.ListFragment;
 import org.holoeverywhere.widget.CheckBox;
 import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.TextView;
@@ -28,28 +27,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-public class GameResultHistoryFragment extends ListFragment implements
-		HistoryDataFragment {
+public class GameResultHistoryFragment extends HistoryItemListFragment {
 
 	@SuppressWarnings("unused")
 	private static final String TAG = "GameResultHistoryFragment";
 
 	private HistoryListAdapter adapter;
 
-	private HistoryDataContainer dataContainer;
-
-	public void setDataContainer(HistoryDataContainer container) {
-		this.dataContainer = container;
+	@Override
+	protected View inflate(LayoutInflater inflater) {
+		return inflater.inflate(R.layout.main_game_result_history_fragment,
+				null);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View view = inflater.inflate(
-				R.layout.history_game_result_history_fragment, null);
+		View view = super.onCreateView(inflater, container, savedInstanceState);
 
 		adapter = new HistoryListAdapter(getActivity(),
-				R.layout.history_game_result_history_list_item);
+				R.layout.main_game_result_history_list_item);
 		adapter.setNotifyOnChange(false);
 		setListAdapter(adapter);
 
@@ -57,42 +54,41 @@ public class GameResultHistoryFragment extends ListFragment implements
 	}
 
 	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+	}
+
+	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 
-		GameAndResult history = adapter.getItem(position);
+		OneGame history = adapter.getItem(position);
 		Intent intent = new Intent(getActivity(), OneGameActivity.class);
-		String playDate = GameSetting.toGameIdFormat(history.getGameSetting()
-				.getDate());
+		String playDate = GameSetting.toGameIdFormat(history.getDate());
 		intent.putExtra(OneGameActivity.IK_PLAY_DATE, playDate);
-		intent.putExtra(OneGameActivity.IK_DATE, history.getGameSetting()
-				.getDate());
+		intent.putExtra(OneGameActivity.IK_DATE, history.getDate());
 		startActivity(intent);
 	}
 
 	@Override
-	public void reload(int index) {
-		if (getActivity() == null || dataContainer == null)
+	public void onPause() {
+		hideActionMode();
+		super.onPause();
+	}
+
+	@Override
+	public void reload(boolean clean) {
+		if (getActivity() == null)
 			return;
 
-		ArrayList<GameAndResult> results = null;
-		switch (index) {
-		case HistoryDataContainer.INDEX_THIS_MONTH:
-			results = dataContainer.getThisMonthGameAndResults();
-			break;
-		case HistoryDataContainer.INDEX_LAST_MONTH:
-			results = dataContainer.getLastMonthGameAndResults();
-			break;
-		case HistoryDataContainer.INDEX_RECENT_FIVE_GAMES:
-		case HistoryDataContainer.INDEX_LAST_THREE_MONTH:
-			results = dataContainer.getAllGameAndResults();
-			break;
-		}
 		adapter.clear();
-		if (results != null) {
+		if (resultList == null || resultList.size() < 1) {
+			noResultTextView.setVisibility(View.VISIBLE);
+		} else {
+			noResultTextView.setVisibility(View.GONE);
 			int count = 0;
-			for (GameAndResult gameAndResult : results) {
-				if (index == HistoryDataContainer.INDEX_RECENT_FIVE_GAMES
+			for (OneGame gameAndResult : resultList) {
+				if (getCurrentMode() == GolfScoreBoardApplication.MODE_RECENT_FIVE_GAMES
 						&& count >= 5) {
 					break;
 				}
@@ -103,8 +99,7 @@ public class GameResultHistoryFragment extends ListFragment implements
 		adapter.notifyDataSetChanged();
 	}
 
-	@Override
-	public void hideActionMode() {
+	private void hideActionMode() {
 		ListView listView = getListView();
 		if (listView == null)
 			return;
@@ -122,18 +117,22 @@ public class GameResultHistoryFragment extends ListFragment implements
 		View[] playerTagViews;
 		TextView[] playerNameTextViews;
 		TextView[] playerScoreTextViews;
+		TextView[] playerOriginalScoreTextViews;
 
 		TextView player1NameTextView, player2NameTextView, player3NameTextView,
 				player4NameTextView, player5NameTextView, player6NameTextView;
 		TextView player1ScoreTextView, player2ScoreTextView,
 				player3ScoreTextView, player4ScoreTextView,
 				player5ScoreTextView, player6ScoreTextView;
+		TextView player1OriginalScoreTextView, player2OriginalScoreTextView,
+				player3OriginalScoreTextView, player4OriginalScoreTextView,
+				player5OriginalScoreTextView, player6OriginalScoreTextView;
 
 		ImageView firstPlaceImageView, secondPlaceImageView,
 				thirdPlaceImageView;
 	}
 
-	private class HistoryListAdapter extends ArrayAdapter<GameAndResult> {
+	private static class HistoryListAdapter extends ArrayAdapter<OneGame> {
 
 		private HistoryListViewHolder holder;
 		private int resourceId;
@@ -149,21 +148,22 @@ public class GameResultHistoryFragment extends ListFragment implements
 			TypedValue tv = new TypedValue();
 			context.getTheme().resolveAttribute(R.attr.primaryTextColor, tv,
 					true);
-			defaultTextColor = getResources().getColor(tv.resourceId);
+			defaultTextColor = context.getResources().getColor(tv.resourceId);
 
 			selectionMap = new SparseBooleanArray();
 			contextualMode = false;
 
 			defaultBackground = 0x00000000;
-			selectedBackground = getActivity().getResources().getColor(
+			selectedBackground = context.getResources().getColor(
 					android.R.color.holo_blue_light);
 		}
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View v = convertView;
+			Context context = getContext();
 			if (v == null) {
-				LayoutInflater vi = (LayoutInflater) getActivity()
+				LayoutInflater vi = (LayoutInflater) context
 						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				v = vi.inflate(resourceId, null);
 				holder = new HistoryListViewHolder();
@@ -224,6 +224,19 @@ public class GameResultHistoryFragment extends ListFragment implements
 				holder.player6ScoreTextView = (TextView) v
 						.findViewById(R.id.Player6ScoreTextView);
 
+				holder.player1OriginalScoreTextView = (TextView) v
+						.findViewById(R.id.Player1OriginalScoreTextView);
+				holder.player2OriginalScoreTextView = (TextView) v
+						.findViewById(R.id.Player2OriginalScoreTextView);
+				holder.player3OriginalScoreTextView = (TextView) v
+						.findViewById(R.id.Player3OriginalScoreTextView);
+				holder.player4OriginalScoreTextView = (TextView) v
+						.findViewById(R.id.Player4OriginalScoreTextView);
+				holder.player5OriginalScoreTextView = (TextView) v
+						.findViewById(R.id.Player5OriginalScoreTextView);
+				holder.player6OriginalScoreTextView = (TextView) v
+						.findViewById(R.id.Player6OriginalScoreTextView);
+
 				holder.playerScoreTextViews = new TextView[Constants.MAX_PLAYER_COUNT];
 				holder.playerScoreTextViews[0] = holder.player1ScoreTextView;
 				holder.playerScoreTextViews[1] = holder.player2ScoreTextView;
@@ -231,6 +244,14 @@ public class GameResultHistoryFragment extends ListFragment implements
 				holder.playerScoreTextViews[3] = holder.player4ScoreTextView;
 				holder.playerScoreTextViews[4] = holder.player5ScoreTextView;
 				holder.playerScoreTextViews[5] = holder.player6ScoreTextView;
+
+				holder.playerOriginalScoreTextViews = new TextView[Constants.MAX_PLAYER_COUNT];
+				holder.playerOriginalScoreTextViews[0] = holder.player1OriginalScoreTextView;
+				holder.playerOriginalScoreTextViews[1] = holder.player2OriginalScoreTextView;
+				holder.playerOriginalScoreTextViews[2] = holder.player3OriginalScoreTextView;
+				holder.playerOriginalScoreTextViews[3] = holder.player4OriginalScoreTextView;
+				holder.playerOriginalScoreTextViews[4] = holder.player5OriginalScoreTextView;
+				holder.playerOriginalScoreTextViews[5] = holder.player6OriginalScoreTextView;
 
 				holder.firstPlaceImageView = (ImageView) v
 						.findViewById(R.id.Player1Image);
@@ -265,66 +286,63 @@ public class GameResultHistoryFragment extends ListFragment implements
 				holder.checkBox.setVisibility(View.GONE);
 			}
 
-			GameAndResult gameAndResult = getItem(position);
+			OneGame gameAndResult = getItem(position);
 			if (gameAndResult == null)
 				return v;
 
-			GameSetting gameSetting = gameAndResult.getGameSetting();
-			PlayerSetting playerSetting = gameAndResult.getPlayerSetting();
-
-			String date1String = DateUtils.formatDateTime(getActivity(),
-					gameSetting.getDate().getTime(), DateUtils.FORMAT_SHOW_DATE
-							| DateUtils.FORMAT_SHOW_YEAR);
+			String date1String = DateUtils.formatDateTime(context,
+					gameAndResult.getDate().getTime(),
+					DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR);
 			holder.date1TextView.setText(date1String);
 
-			String date2String = DateUtils.formatDateTime(getActivity(),
-					gameSetting.getDate().getTime(), DateUtils.FORMAT_SHOW_TIME
+			String date2String = DateUtils.formatDateTime(context,
+					gameAndResult.getDate().getTime(),
+					DateUtils.FORMAT_SHOW_TIME
 							| DateUtils.FORMAT_ABBREV_WEEKDAY
 							| DateUtils.FORMAT_SHOW_WEEKDAY
 							| DateUtils.FORMAT_12HOUR);
 			holder.date2TextView.setText(date2String);
 
-			int playerCount = gameSetting.getPlayerCount();
-			ArrayList<PlayerScoreItem> playerScoreItems = new ArrayList<PlayerScoreItem>();
-			for (int i = 0; i < Constants.MAX_PLAYER_COUNT; i++) {
-				String playerName = playerSetting.getPlayerName(i);
-				if (i < playerCount) {
-					PlayerScore playerScore = gameAndResult
-							.getPlayerScore(playerName);
-					playerScoreItems.add(new PlayerScoreItem(i, playerName,
-							playerScore.getFinalScore(), playerScore
-									.getAdjustedTotalFee()));
-				} else {
-					playerScoreItems.add(new PlayerScoreItem(i, playerName,
-							100, 0));
-				}
-			}
-			Collections.sort(playerScoreItems);
+			int playerCount = gameAndResult.getPlayerCount();
+
+			PlayerScore[] playerScores = new PlayerScore[playerCount];
 
 			for (int i = 0; i < playerCount; i++) {
-				PlayerScoreItem playerScoreItem = playerScoreItems.get(i);
+				playerScores[i] = gameAndResult.getPlayerScore(i);
+			}
+			Arrays.sort(playerScores);
 
-				holder.playerNameTextViews[i].setText(playerScoreItem.name);
-				if (playerScoreItem.score > 0) {
-					holder.playerScoreTextViews[i].setText("+"
-							+ playerScoreItem.score);
+			for (int i = 0; i < playerCount; i++) {
+				PlayerScore playerScore = playerScores[i];
+
+				String playerName = playerScore.getName();
+				holder.playerNameTextViews[i].setText(playerName);
+
+				UIUtil.setScoreTextView(context,
+						holder.playerScoreTextViews[i],
+						playerScore.getFinalScore());
+
+				int originalScore = playerScore.getOriginalScore();
+				if (originalScore > 0) {
+					holder.playerOriginalScoreTextViews[i].setText("(+"
+							+ originalScore + ")");
 				} else {
-					holder.playerScoreTextViews[i].setText(String
-							.valueOf(playerScoreItem.score));
+					holder.playerOriginalScoreTextViews[i].setText("("
+							+ originalScore + ")");
 				}
-				if (playerScoreItem.score < 0) {
-					holder.playerScoreTextViews[i]
+				if (originalScore < 0) {
+					holder.playerOriginalScoreTextViews[i]
 							.setTextColor(Constants.UNDER_PAR_TEXT_COLOR);
-				} else if (playerScoreItem.score == 0) {
-					holder.playerScoreTextViews[i]
+				} else if (originalScore == 0) {
+					holder.playerOriginalScoreTextViews[i]
 							.setTextColor(Constants.EVEN_PAR_TEXT_COLOR);
 				} else {
-					holder.playerScoreTextViews[i]
+					holder.playerOriginalScoreTextViews[i]
 							.setTextColor(defaultTextColor);
 				}
 
 				int faceImageResourceId = PlayerUIUtil
-						.getRoundResourceId(playerScoreItem.name);
+						.getRoundResourceId(playerName);
 				if (i == 0) {
 					holder.firstPlaceImageView
 							.setImageResource(faceImageResourceId);
@@ -336,7 +354,7 @@ public class GameResultHistoryFragment extends ListFragment implements
 							.setImageResource(faceImageResourceId);
 				}
 
-				int tagColor = PlayerUIUtil.getTagColor(playerScoreItem.name);
+				int tagColor = PlayerUIUtil.getTagColor(playerName);
 				holder.playerTagViews[i].setBackgroundColor(tagColor);
 			}
 
@@ -345,10 +363,14 @@ public class GameResultHistoryFragment extends ListFragment implements
 					holder.playerTagViews[i].setVisibility(View.VISIBLE);
 					holder.playerNameTextViews[i].setVisibility(View.VISIBLE);
 					holder.playerScoreTextViews[i].setVisibility(View.VISIBLE);
+					holder.playerOriginalScoreTextViews[i]
+							.setVisibility(View.VISIBLE);
 				} else {
 					holder.playerTagViews[i].setVisibility(View.INVISIBLE);
 					holder.playerNameTextViews[i].setVisibility(View.INVISIBLE);
 					holder.playerScoreTextViews[i]
+							.setVisibility(View.INVISIBLE);
+					holder.playerOriginalScoreTextViews[i]
 							.setVisibility(View.INVISIBLE);
 				}
 			}
@@ -369,42 +391,13 @@ public class GameResultHistoryFragment extends ListFragment implements
 				holder.playerScoreTextViews[3].setVisibility(View.GONE);
 				holder.playerScoreTextViews[4].setVisibility(View.GONE);
 				holder.playerScoreTextViews[5].setVisibility(View.GONE);
+
+				holder.playerOriginalScoreTextViews[3].setVisibility(View.GONE);
+				holder.playerOriginalScoreTextViews[4].setVisibility(View.GONE);
+				holder.playerOriginalScoreTextViews[5].setVisibility(View.GONE);
 			}
 
 			return v;
 		}
-	}
-
-	private static class PlayerScoreItem implements Comparable<PlayerScoreItem> {
-		private int playerId;
-		private String name;
-		private int score;
-		private int fee;
-
-		public PlayerScoreItem(int playerId, String name, int score, int fee) {
-			this.playerId = playerId;
-			this.name = name;
-			this.score = score;
-			this.fee = fee;
-		}
-
-		@Override
-		public int compareTo(PlayerScoreItem compare) {
-			if (score < compare.score)
-				return -1;
-			if (score > compare.score)
-				return 1;
-			if (fee < compare.fee)
-				return -1;
-			if (fee > compare.fee)
-				return 1;
-			if (playerId < compare.playerId)
-				return -1;
-			if (playerId > compare.playerId)
-				return 1;
-
-			return 0;
-		}
-
 	}
 }

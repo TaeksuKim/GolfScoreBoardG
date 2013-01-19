@@ -112,6 +112,7 @@ public class NetShareClientFragment extends ListFragment implements
 				R.layout.netshare_client_list_item);
 		setListAdapter(adapter);
 		getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
 		getListView().setOnItemClickListener(
 				new android.widget.AdapterView.OnItemClickListener() {
 					@Override
@@ -366,7 +367,8 @@ public class NetShareClientFragment extends ListFragment implements
 		TextView date1TextView, date2TextView, playerTextView;
 	}
 
-	private class GameHistoryAdapter extends ArrayAdapter<GameHistoryListItem> {
+	private static class GameHistoryAdapter extends
+			ArrayAdapter<GameHistoryListItem> {
 
 		private NetShareDeviceListViewHolder holder;
 
@@ -378,7 +380,7 @@ public class NetShareClientFragment extends ListFragment implements
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View v = convertView;
 			if (v == null) {
-				LayoutInflater vi = (LayoutInflater) getActivity()
+				LayoutInflater vi = (LayoutInflater) getContext()
 						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				v = vi.inflate(R.layout.netshare_client_list_item, null);
 				holder = new NetShareDeviceListViewHolder();
@@ -404,12 +406,12 @@ public class NetShareClientFragment extends ListFragment implements
 			if (gameSetting == null)
 				return v;
 
-			String date1String = DateUtils.formatDateTime(getActivity(),
+			String date1String = DateUtils.formatDateTime(getContext(),
 					gameSetting.getDate().getTime(), DateUtils.FORMAT_SHOW_DATE
 							| DateUtils.FORMAT_SHOW_YEAR);
 			holder.date1TextView.setText(date1String);
 
-			String date2String = DateUtils.formatDateTime(getActivity(),
+			String date2String = DateUtils.formatDateTime(getContext(),
 					gameSetting.getDate().getTime(), DateUtils.FORMAT_SHOW_TIME
 							| DateUtils.FORMAT_ABBREV_WEEKDAY
 							| DateUtils.FORMAT_SHOW_WEEKDAY
@@ -433,7 +435,7 @@ public class NetShareClientFragment extends ListFragment implements
 		if (selection == null)
 			return;
 
-		gameTask = new GameReceiveTask(getSupportActivity());
+		gameTask = new GameReceiveTask(getActivity());
 		gameTask.execute(selection.getGameId());
 	}
 
@@ -445,8 +447,8 @@ public class NetShareClientFragment extends ListFragment implements
 
 		if (item == null)
 			return;
-		
-		gameListTask = new GameHistoryListReceiveTask(getSupportActivity());
+
+		gameListTask = new GameHistoryListReceiveTask(getActivity());
 		gameListTask.execute(item);
 	}
 
@@ -544,17 +546,6 @@ public class NetShareClientFragment extends ListFragment implements
 			}
 
 			setUIStatus();
-			// switch (result) {
-			// case RESULT_OK:
-			// receiveFinished(R.string.fragment_netshare_client_message_receive_finished);
-			// return;
-			// case RESULT_CONNECTION_ERROR:
-			// receiveFailed(R.string.fragment_netshare_client_message_cannot_connect);
-			// return;
-			// case RESULT_RECEIVE_ERROR:
-			// receiveFailed(R.string.fragment_netshare_client_message_receive_error);
-			// return;
-			// }
 		}
 
 		private static final String PAGE = "games";
@@ -653,8 +644,8 @@ public class NetShareClientFragment extends ListFragment implements
 			if (error) {
 				requestFailed(R.string.fragment_netshare_client_message_receive_error);
 			} else {
-				getSupportActivity().setResult(Activity.RESULT_OK);
-				getSupportActivity().finish();
+				getActivity().setResult(Activity.RESULT_OK);
+				getActivity().finish();
 				return;
 			}
 
@@ -730,4 +721,5 @@ public class NetShareClientFragment extends ListFragment implements
 	@Override
 	public void onNothingSelected(AdapterView<?> parent) {
 	}
+
 }

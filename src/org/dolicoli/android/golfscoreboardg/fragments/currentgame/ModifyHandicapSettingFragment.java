@@ -5,7 +5,7 @@ import java.util.Collections;
 
 import org.dolicoli.android.golfscoreboardg.Constants;
 import org.dolicoli.android.golfscoreboardg.R;
-import org.dolicoli.android.golfscoreboardg.data.GameAndResult;
+import org.dolicoli.android.golfscoreboardg.data.OneGame;
 import org.dolicoli.android.golfscoreboardg.tasks.GameAndResultTask;
 import org.dolicoli.android.golfscoreboardg.tasks.GameAndResultTask.GameAndResultTaskListener;
 import org.dolicoli.android.golfscoreboardg.utils.DateRangeUtil;
@@ -15,8 +15,11 @@ import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.dolicoli.android.golfscoreboardg.utils.handicaps.Ecco1Calculator;
 import org.dolicoli.android.golfscoreboardg.utils.handicaps.HandicapCalculator;
 import org.dolicoli.android.golfscoreboardg.utils.handicaps.HandicapCalculator.GameResultItem;
+import org.dolicoli.android.golfscoreboardg.utils.handicaps.HandicapCalculator.ResourceContainer;
 import org.dolicoli.android.golfscoreboardg.utils.handicaps.LaterBetterCalculator;
+import org.dolicoli.android.golfscoreboardg.utils.handicaps.MoyaCalculator;
 import org.dolicoli.android.golfscoreboardg.utils.handicaps.SimpleHandicapCalculator;
+import org.dolicoli.android.golfscoreboardg.utils.handicaps.ThreeMonthsHandicapCalculator;
 import org.holoeverywhere.ArrayAdapter;
 import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.Activity;
@@ -30,6 +33,7 @@ import org.holoeverywhere.widget.TextView;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SpinnerAdapter;
 
 public class ModifyHandicapSettingFragment extends Fragment implements
 		GameAndResultTaskListener, OnItemSelectedListener {
@@ -46,27 +50,34 @@ public class ModifyHandicapSettingFragment extends Fragment implements
 
 	private int playerCount;
 	private String[] playerNames, canonicalPlayerNames;
-	private ArrayList<GameAndResult> gameAndResults;
+	private ArrayList<OneGame> gameAndResults;
 	private HandicapCalculator[] calculators;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		Activity activity = getSupportActivity();
+		final Activity activity = getSupportActivity();
 		View view = inflater.inflate(
 				R.layout.current_game_modify_handicap_setting_fragment, null);
 
 		progressBar = (ProgressBar) view.findViewById(R.id.ProgressBar);
 
+		ResourceContainer resourceContainer = new ResourceContainer() {
+			@Override
+			public String getString(int resourceId) {
+				return activity.getString(resourceId);
+			}
+		};
 		calculators = new HandicapCalculator[] {
 				new SimpleHandicapCalculator(), new Ecco1Calculator(),
-				new LaterBetterCalculator() };
+				new LaterBetterCalculator(), new MoyaCalculator(),
+				new ThreeMonthsHandicapCalculator() };
 		String[] calculatorNames = new String[calculators.length];
 		for (int i = 0; i < calculators.length; i++) {
-			calculatorNames[i] = calculators[i].getName(activity);
+			calculatorNames[i] = calculators[i].getName(resourceContainer);
 		}
 
-		final ArrayAdapter<String> handicapCalculatorSpinnerAdapter = new ArrayAdapter<String>(
+		final SpinnerAdapter handicapCalculatorSpinnerAdapter = new ArrayAdapter<String>(
 				activity, R.layout.simple_spinner_dropdown_item,
 				calculatorNames);
 		handicapCalculatorSpinner = (Spinner) view
@@ -74,7 +85,7 @@ public class ModifyHandicapSettingFragment extends Fragment implements
 		handicapCalculatorSpinner.setAdapter(handicapCalculatorSpinnerAdapter);
 		handicapCalculatorSpinner.setOnItemSelectedListener(this);
 
-		final ArrayAdapter<String> handicapAdapter = new ArrayAdapter<String>(
+		final SpinnerAdapter handicapAdapter = new ArrayAdapter<String>(
 				activity, R.layout.simple_spinner_dropdown_item,
 				new String[] { "-", "-1", "-2", "-3", "-4", "-5", "-6", "-7",
 						"-8", "-9", "-10", "-11", "-12", "-13", "-14", "-15",
@@ -244,9 +255,9 @@ public class ModifyHandicapSettingFragment extends Fragment implements
 			progressBar.setVisibility(View.VISIBLE);
 
 			for (int i = 0; i < Constants.MAX_PLAYER_COUNT; i++) {
-				playerRecommendHandicapTextViews[i].setText("");
-				playerAvgScoreTexts[i].setText("");
-				playerGameCountTexts[i].setText("");
+				playerRecommendHandicapTextViews[i].setText(R.string.blank);
+				playerAvgScoreTexts[i].setText(R.string.blank);
+				playerGameCountTexts[i].setText(R.string.blank);
 				playerHandicapSpinners[i].setSelection(0);
 				playerExtraScoreSpinners[i].setSelection(0);
 			}
@@ -259,7 +270,7 @@ public class ModifyHandicapSettingFragment extends Fragment implements
 		this.playerNames = new String[playerCount];
 		this.canonicalPlayerNames = new String[playerCount];
 
-		gameAndResults = new ArrayList<GameAndResult>();
+		gameAndResults = new ArrayList<OneGame>();
 
 		for (int i = 0; i < playerCount; i++) {
 			playerNames[i] = names[i];
@@ -278,8 +289,7 @@ public class ModifyHandicapSettingFragment extends Fragment implements
 		}
 
 		DateRange dateRange = DateRangeUtil.getDateRange(3);
-		GameAndResultTask task = new GameAndResultTask(getSupportActivity(),
-				this);
+		GameAndResultTask task = new GameAndResultTask(getActivity(), this);
 		task.execute(dateRange);
 	}
 
@@ -311,9 +321,9 @@ public class ModifyHandicapSettingFragment extends Fragment implements
 	}
 
 	@Override
-	public void onGameAndResultFinished(GameAndResult[] results) {
+	public void onGameAndResultFinished(OneGame[] results) {
 		gameAndResults.clear();
-		for (GameAndResult result : results) {
+		for (OneGame result : results) {
 			gameAndResults.add(result);
 		}
 		Collections.sort(gameAndResults);
@@ -355,14 +365,18 @@ public class ModifyHandicapSettingFragment extends Fragment implements
 					.valueOf(handicap));
 
 			int gameCount = calculator.getGameCount(playerName);
-			playerGameCountTexts[i].setText(gameCount + "°ÔÀÓ");
+			playerGameCountTexts[i]
+					.setText(getString(
+							R.string.fragment_game_setting_game_count_format,
+							gameCount));
 
 			float avgScore = calculator.getAvgScore(playerName);
 			if (gameCount > 0) {
 				playerAvgScoreTexts[i].setText(UIUtil.formatAvgScore(activity,
 						avgScore));
 			} else {
-				playerAvgScoreTexts[i].setText("-");
+				playerAvgScoreTexts[i]
+						.setText(R.string.fragment_game_setting_no_game_count);
 			}
 		}
 	}

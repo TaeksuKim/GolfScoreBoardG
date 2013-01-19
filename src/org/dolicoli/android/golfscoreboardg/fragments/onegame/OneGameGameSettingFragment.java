@@ -3,18 +3,18 @@ package org.dolicoli.android.golfscoreboardg.fragments.onegame;
 import org.dolicoli.android.golfscoreboardg.Constants;
 import org.dolicoli.android.golfscoreboardg.OneGameActivity;
 import org.dolicoli.android.golfscoreboardg.R;
-import org.dolicoli.android.golfscoreboardg.data.SingleGameResult;
+import org.dolicoli.android.golfscoreboardg.data.OneGame;
 import org.dolicoli.android.golfscoreboardg.tasks.HistoryGameSettingQueryTask;
 import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.Fragment;
+import org.holoeverywhere.widget.TextView;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 public class OneGameGameSettingFragment extends Fragment implements
 		OneGameActivityPage, HistoryGameSettingQueryTask.TaskListener {
@@ -31,12 +31,6 @@ public class OneGameGameSettingFragment extends Fragment implements
 	private View[] rankingFeePerRankingTitleTextViews;
 
 	private String playDate;
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		playDate = "";
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -126,6 +120,16 @@ public class OneGameGameSettingFragment extends Fragment implements
 	}
 
 	@Override
+	public void onResume() {
+		super.onResume();
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+	}
+
+	@Override
 	public void reload(boolean clean) {
 		if (getActivity() == null || playDate == null)
 			return;
@@ -144,7 +148,7 @@ public class OneGameGameSettingFragment extends Fragment implements
 	}
 
 	@Override
-	public void onGameQueryFinished(SingleGameResult gameResult) {
+	public void onGameQueryFinished(OneGame gameResult) {
 		FragmentActivity activity = getActivity();
 		if (activity == null)
 			return;

@@ -11,6 +11,7 @@ import org.dolicoli.android.golfscoreboardg.R;
 import org.dolicoli.android.golfscoreboardg.data.settings.GameSetting;
 import org.dolicoli.android.golfscoreboardg.data.settings.PlayerSetting;
 import org.dolicoli.android.golfscoreboardg.data.settings.Result;
+import org.dolicoli.android.golfscoreboardg.db.DownloadTickDatabaseWorker;
 import org.dolicoli.android.golfscoreboardg.db.HistoryGameSettingDatabaseWorker;
 import org.dolicoli.android.golfscoreboardg.net.HistoryListParser;
 import org.dolicoli.android.golfscoreboardg.net.HistoryListParser.History;
@@ -109,7 +110,7 @@ public class ThreeMonthsGameReceiveTask extends
 			return new ReceiveResult(false, CODE_CONNECTION_ERROR);
 		}
 
-		if (contents == null || contents.isEmpty()) {
+		if (contents == null || contents.equals("")) {
 			return new ReceiveResult(false, CODE_NO_DATA);
 		}
 
@@ -125,6 +126,10 @@ public class ThreeMonthsGameReceiveTask extends
 			if (isCancelled()) {
 				return new ReceiveResult(true, CODE_CANCEL);
 			}
+
+			DownloadTickDatabaseWorker tickWorker = new DownloadTickDatabaseWorker(
+					context);
+			tickWorker.updateTick(parser.getTick());
 
 			publishProgress(new ReceiveProgress(
 					0,

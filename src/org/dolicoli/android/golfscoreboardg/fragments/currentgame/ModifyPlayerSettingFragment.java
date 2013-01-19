@@ -3,14 +3,13 @@ package org.dolicoli.android.golfscoreboardg.fragments.currentgame;
 import java.util.ArrayList;
 
 import org.dolicoli.android.golfscoreboardg.Constants;
-import org.dolicoli.android.golfscoreboardg.InputFragmentListener;
+import org.dolicoli.android.golfscoreboardg.CurrentGameModifyGameSettingActivity;
 import org.dolicoli.android.golfscoreboardg.R;
 import org.dolicoli.android.golfscoreboardg.data.PlayerCache;
 import org.dolicoli.android.golfscoreboardg.data.settings.GameSetting;
 import org.dolicoli.android.golfscoreboardg.data.settings.PlayerSetting;
 import org.dolicoli.android.golfscoreboardg.db.GameSettingDatabaseWorker;
 import org.dolicoli.android.golfscoreboardg.db.PlayerCacheDatabaseWorker;
-import org.dolicoli.android.golfscoreboardg.db.PlayerSettingDatabaseWorker;
 import org.holoeverywhere.ArrayAdapter;
 import org.holoeverywhere.LayoutInflater;
 import org.holoeverywhere.app.AlertDialog;
@@ -106,10 +105,12 @@ public class ModifyPlayerSettingFragment extends Fragment implements
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
+		GameSetting gameSetting = new GameSetting();
+		PlayerSetting playerSetting = new PlayerSetting();
+
 		GameSettingDatabaseWorker gameSettingWorker = new GameSettingDatabaseWorker(
 				getActivity());
-		GameSetting gameSetting = new GameSetting();
-		gameSettingWorker.getGameSetting(gameSetting);
+		gameSettingWorker.getGameSetting(gameSetting, playerSetting);
 		playerCount = gameSetting.getPlayerCount();
 
 		for (int i = 0; i < Constants.MAX_PLAYER_COUNT; i++) {
@@ -120,11 +121,6 @@ public class ModifyPlayerSettingFragment extends Fragment implements
 			playerNameSpinners[i].setOnItemSelectedListener(this);
 			newNameButtons[i].setOnClickListener(this);
 		}
-
-		PlayerSettingDatabaseWorker playerSettingWorker = new PlayerSettingDatabaseWorker(
-				getActivity());
-		PlayerSetting playerSetting = new PlayerSetting();
-		playerSettingWorker.getPlayerSetting(playerSetting);
 
 		for (int i = 0; i < playerCount; i++) {
 			String playerName = playerSetting.getPlayerName(i);
@@ -223,10 +219,9 @@ public class ModifyPlayerSettingFragment extends Fragment implements
 	private void showInputPlayerNameDialog(final Spinner spinner) {
 		AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
 
-		alert.setTitle("이름");
-		alert.setMessage("이름을 입력하세요.");
+		alert.setTitle(R.string.dialog_add_name_title);
+		alert.setMessage(R.string.dialog_please_insert_name);
 
-		// Set an EditText view to get user input
 		final EditText input = new EditText(getActivity());
 		alert.setView(input);
 
@@ -275,7 +270,7 @@ public class ModifyPlayerSettingFragment extends Fragment implements
 				.getStringArray(R.array.DefaultCachedPlayerNames);
 		ArrayList<String> names = new ArrayList<String>();
 
-		names.add("이름 선택");
+		names.add(getString(R.string.fragment_game_setting_select_player_name));
 		for (String name : defaultCachedPlayerNames) {
 			if (names.contains(name))
 				continue;
@@ -296,7 +291,7 @@ public class ModifyPlayerSettingFragment extends Fragment implements
 	}
 
 	private void inputDataChanged() {
-		WizardWindow activity = ((WizardWindow) getActivity());
+		CurrentGameModifyGameSettingActivity activity = ((CurrentGameModifyGameSettingActivity) getActivity());
 		if (activity == null)
 			return;
 
@@ -305,9 +300,8 @@ public class ModifyPlayerSettingFragment extends Fragment implements
 	}
 
 	private static class PlayerNameSpinnerAdapter extends ArrayAdapter<String> {
-
 		public PlayerNameSpinnerAdapter(Context context) {
-			super(context, R.layout.simple_spinner_dropdown_item);
+			super(context, android.R.layout.simple_list_item_1);
 		}
 
 	}

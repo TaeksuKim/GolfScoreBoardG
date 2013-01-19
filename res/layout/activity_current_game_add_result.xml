@@ -34,8 +34,9 @@
         </LinearLayout>
     </RelativeLayout>
 
-    <FrameLayout
-        android:id="@+id/content"
+    <fragment
+        android:id="@+id/AddResultFragment"
+        android:name="org.dolicoli.android.golfscoreboard.fragments.currentgame.AddResultFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/ButtonPanel" />

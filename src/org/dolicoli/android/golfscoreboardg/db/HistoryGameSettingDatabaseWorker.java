@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.dolicoli.android.golfscoreboardg.Constants;
-import org.dolicoli.android.golfscoreboardg.data.GameAndResult;
+import org.dolicoli.android.golfscoreboardg.data.OneGame;
 import org.dolicoli.android.golfscoreboardg.data.settings.GameSetting;
 import org.dolicoli.android.golfscoreboardg.data.settings.PlayerSetting;
 import org.dolicoli.android.golfscoreboardg.data.settings.Result;
@@ -302,7 +302,7 @@ public class HistoryGameSettingDatabaseWorker extends AbstractDatabaseWorker {
 
 	private void addHistory(GameSetting gameSetting,
 			PlayerSetting playerSetting, Iterable<Result> results) {
-		Log.d(TAG, "clearHistory()");
+		Log.d(TAG, "addHistory()");
 
 		open();
 
@@ -316,6 +316,12 @@ public class HistoryGameSettingDatabaseWorker extends AbstractDatabaseWorker {
 
 			HistoryPlayerSettingDatabaseWorker.updatePlayerSetting(mDb,
 					playDate, playerSetting);
+
+			int playerCount = gameSetting.getPlayerCount();
+			for (int i = 0; i < playerCount; i++) {
+				String playerName = playerSetting.getPlayerName(i);
+				PlayerCacheDatabaseWorker.putPlayer(mDb, playerName);
+			}
 
 			HistoryResultDatabaseWorker.deleteResult(mDb, playDate);
 			for (Result result : results) {
@@ -655,102 +661,11 @@ public class HistoryGameSettingDatabaseWorker extends AbstractDatabaseWorker {
 										+ HistoryResultDatabaseWorker.COLUMN_PLAYER_5_HANDICAP_USED,
 								"R."
 										+ HistoryResultDatabaseWorker.COLUMN_PLAYER_6_HANDICAP_USED, },
+
 						"G." + COLUMN_PLAY_DATE + " = ? " + holeWhereClause,
 						null, null, null,
 						"R." + HistoryResultDatabaseWorker.COLUMN_HOLE_NUMBER,
 						null);
-		// String sql = queryBuilder
-		// .buildQuery(
-		// new String[] {
-		// "G." + COLUMN_HOLE_COUNT,
-		// "G." + COLUMN_PLAYER_COUNT,
-		// "G." + COLUMN_GAME_FEE,
-		// "G." + COLUMN_EXTRA_FEE,
-		// "G." + COLUMN_RANKING_FEE,
-		// "G." + COLUMN_DATE,
-		// "G." + COLUMN_HOLE_FEE_RANKING_1,
-		// "G." + COLUMN_HOLE_FEE_RANKING_2,
-		// "G." + COLUMN_HOLE_FEE_RANKING_3,
-		// "G." + COLUMN_HOLE_FEE_RANKING_4,
-		// "G." + COLUMN_HOLE_FEE_RANKING_5,
-		// "G." + COLUMN_HOLE_FEE_RANKING_6,
-		// "G." + COLUMN_RANKING_FEE_RANKING_1,
-		// "G." + COLUMN_RANKING_FEE_RANKING_2,
-		// "G." + COLUMN_RANKING_FEE_RANKING_3,
-		// "G." + COLUMN_RANKING_FEE_RANKING_4,
-		// "G." + COLUMN_RANKING_FEE_RANKING_5,
-		// "G." + COLUMN_RANKING_FEE_RANKING_6,
-		//
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_NAME_1,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_NAME_2,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_NAME_3,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_NAME_4,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_NAME_5,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_NAME_6,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_HANDICAP_1,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_HANDICAP_2,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_HANDICAP_3,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_HANDICAP_4,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_HANDICAP_5,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_HANDICAP_6,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_EXTRA_SCORE_1,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_EXTRA_SCORE_2,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_EXTRA_SCORE_3,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_EXTRA_SCORE_4,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_EXTRA_SCORE_5,
-		// "P."
-		// + HistoryPlayerSettingDatabaseWorker.COLUMN_EXTRA_SCORE_6,
-		//
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_HOLE_NUMBER,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PAR_NUMBER,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PLAYER_1_SCORE,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PLAYER_2_SCORE,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PLAYER_3_SCORE,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PLAYER_4_SCORE,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PLAYER_5_SCORE,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PLAYER_6_SCORE,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PLAYER_1_HANDICAP_USED,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PLAYER_2_HANDICAP_USED,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PLAYER_3_HANDICAP_USED,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PLAYER_4_HANDICAP_USED,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PLAYER_5_HANDICAP_USED,
-		// "R."
-		// + HistoryResultDatabaseWorker.COLUMN_PLAYER_6_HANDICAP_USED, },
-		//
-		// "G." + COLUMN_PLAY_DATE + " = ? " + holeWhereClause,
-		// null, null,
-		// "R." + HistoryResultDatabaseWorker.COLUMN_HOLE_NUMBER,
-		// null);
 
 		open();
 
@@ -976,7 +891,7 @@ public class HistoryGameSettingDatabaseWorker extends AbstractDatabaseWorker {
 	}
 
 	public void getGameSettingsWithResult(long from, long to,
-			List<GameAndResult> gameAndResults) throws SQLException {
+			List<OneGame> gameAndResults) throws SQLException {
 		Log.d(TAG, "getGameSettingsWithResult()");
 
 		HashMap<String, Wrapper> map = new HashMap<String, Wrapper>();
@@ -1310,13 +1225,8 @@ public class HistoryGameSettingDatabaseWorker extends AbstractDatabaseWorker {
 			values.toArray(array);
 			Arrays.sort(array);
 			for (Wrapper w : array) {
-				// SingleGameResult r = new SingleGameResult();
-				// r.setGameSetting(w.gameSetting);
-				// r.setPlayerSetting(w.playerSetting);
-				// r.setResults(w.results);
-				// gameAndResults.add(r);
-				gameAndResults.add(new GameAndResult(w.gameSetting,
-						w.playerSetting, w.results));
+				gameAndResults.add(new OneGame(w.gameSetting, w.playerSetting,
+						w.results));
 			}
 		} finally {
 			if (cursor != null) {

@@ -2,6 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
+        android:id="@+id/ImportThisGame"
+        android:alphabeticShortcut="g"
+        android:icon="?refreshMenuIcon"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/menu_import_this_game"/>
+    <item
         android:id="@+id/NetShareReceiveData"
         android:alphabeticShortcut="m"
         android:icon="?downloadMenuIcon"
@@ -13,22 +19,5 @@
         android:icon="?saveMenuIcon"
         android:showAsAction="ifRoom|withText"
         android:title="@string/menu_save"/>
-    <item
-        android:id="@+id/Reset"
-        android:alphabeticShortcut="r"
-        android:icon="?deleteMenuIcon"
-        android:showAsAction="ifRoom|withText"
-        android:title="@string/menu_reset"/>
-    <item
-        android:id="@+id/Settings"
-        android:alphabeticShortcut="s"
-        android:icon="?settingMenuIcon"
-        android:showAsAction="withText"
-        android:title="@string/menu_settings"/>
-    <item
-        android:id="@+id/About"
-        android:icon="?aboutMenuIcon"
-        android:showAsAction="withText"
-        android:title="@string/menu_about"/>
 
 </menu>

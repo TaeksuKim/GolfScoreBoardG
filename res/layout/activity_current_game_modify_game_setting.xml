@@ -75,35 +75,40 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/ButtonPanel" >
 
-        <FrameLayout
-            android:id="@+id/GameSettingContent"
+        <fragment
+            android:id="@+id/ModifyGameSettingFragment"
+            android:name="org.dolicoli.android.golfscoreboard.fragments.currentgame.ModifyGameSettingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="visible" />
 
-        <FrameLayout
-            android:id="@+id/HoleFeeSettingContent"
+        <fragment
+            android:id="@+id/ModifyHoleFeeSettingFragment"
+            android:name="org.dolicoli.android.golfscoreboard.fragments.currentgame.ModifyHoleFeeSettingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="visible" />
 
-        <FrameLayout
-            android:id="@+id/RankingFeeSettingContent"
+        <fragment
+            android:id="@+id/ModifyRankingFeeSettingFragment"
+            android:name="org.dolicoli.android.golfscoreboard.fragments.currentgame.ModifyRankingFeeSettingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="visible" />
 
-        <FrameLayout
-            android:id="@+id/PlayerSettingContent"
+        <fragment
+            android:id="@+id/ModifyPlayerSettingFragment"
+            android:name="org.dolicoli.android.golfscoreboard.fragments.currentgame.ModifyPlayerSettingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible" />
+            android:visibility="gone" />
 
-        <FrameLayout
-            android:id="@+id/HandicapSettingContent"
+        <fragment
+            android:id="@+id/ModifyHandicapSettingFragment"
+            android:name="org.dolicoli.android.golfscoreboard.fragments.currentgame.ModifyHandicapSettingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible" />
+            android:visibility="gone" />
     </RelativeLayout>
 
 </RelativeLayout>

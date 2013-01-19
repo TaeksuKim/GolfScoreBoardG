@@ -1,21 +1,19 @@
-package org.dolicoli.android.golfscoreboardg.fragments.history;
+package org.dolicoli.android.golfscoreboardg.fragments.main;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.dolicoli.android.golfscoreboardg.GolfScoreBoardApplication;
 import org.dolicoli.android.golfscoreboardg.PersonalStatisticsActivity;
 import org.dolicoli.android.golfscoreboardg.R;
-import org.dolicoli.android.golfscoreboardg.data.GameAndResult;
-import org.dolicoli.android.golfscoreboardg.data.settings.PlayerSetting;
+import org.dolicoli.android.golfscoreboardg.data.OneGame;
 import org.dolicoli.android.golfscoreboardg.utils.PlayerUIUtil;
 import org.dolicoli.android.golfscoreboardg.utils.TagProgressBar;
 import org.dolicoli.android.golfscoreboardg.utils.UIUtil;
 import org.holoeverywhere.ArrayAdapter;
 import org.holoeverywhere.LayoutInflater;
-import org.holoeverywhere.app.ListFragment;
 import org.holoeverywhere.widget.Button;
 import org.holoeverywhere.widget.ListView;
 import org.holoeverywhere.widget.TextView;
@@ -29,25 +27,22 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-public class PlayerRankingFragment extends ListFragment implements
-		HistoryDataFragment {
+public class PlayerRankingFragment extends HistoryItemListFragment {
 
 	private PlayerInfoListAdapter adapter;
 
-	private HistoryDataContainer dataContainer;
-
-	public void setDataContainer(HistoryDataContainer container) {
-		this.dataContainer = container;
+	@Override
+	protected View inflate(LayoutInflater inflater) {
+		return inflater.inflate(R.layout.main_player_ranking_fragment, null);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.history_player_ranking_fragment,
-				null);
+		View view = super.onCreateView(inflater, container, savedInstanceState);
 
 		adapter = new PlayerInfoListAdapter(getActivity(),
-				R.layout.history_player_ranking_list_item);
+				R.layout.main_player_ranking_list_item);
 		adapter.setNotifyOnChange(false);
 		setListAdapter(adapter);
 
@@ -70,37 +65,26 @@ public class PlayerRankingFragment extends ListFragment implements
 	}
 
 	@Override
-	public void reload(int index) {
-		if (getActivity() == null || dataContainer == null)
+	public void reload(boolean clean) {
+		if (getActivity() == null)
 			return;
 
-		ArrayList<GameAndResult> results = null;
-		switch (index) {
-		case HistoryDataContainer.INDEX_THIS_MONTH:
-			results = dataContainer.getThisMonthGameAndResults();
-			break;
-		case HistoryDataContainer.INDEX_LAST_MONTH:
-			results = dataContainer.getLastMonthGameAndResults();
-			break;
-		case HistoryDataContainer.INDEX_RECENT_FIVE_GAMES:
-		case HistoryDataContainer.INDEX_LAST_THREE_MONTH:
-			results = dataContainer.getAllGameAndResults();
-			break;
-		}
-		if (results == null) {
+		if (resultList == null || resultList.size() < 1) {
+			noResultTextView.setVisibility(View.VISIBLE);
+
 			adapter.clear();
 			adapter.notifyDataSetChanged();
 		} else {
+			noResultTextView.setVisibility(View.GONE);
+
 			HashMap<String, PlayerInfo> playerInfoMap = new HashMap<String, PlayerInfo>();
-			if (index == HistoryDataContainer.INDEX_RECENT_FIVE_GAMES) {
+			if (getCurrentMode() == GolfScoreBoardApplication.MODE_RECENT_FIVE_GAMES) {
 				HashMap<String, Integer> playerGameCountMap = new HashMap<String, Integer>();
-				for (GameAndResult gameAndResult : results) {
-					int playerCount = gameAndResult.getGameSetting()
-							.getPlayerCount();
-					PlayerSetting playerSettings = gameAndResult
-							.getPlayerSetting();
+				for (OneGame gameAndResult : resultList) {
+					int holeCount = gameAndResult.getHoleCount();
+					int playerCount = gameAndResult.getPlayerCount();
 					for (int playerId = 0; playerId < playerCount; playerId++) {
-						String playerName = playerSettings
+						String playerName = gameAndResult
 								.getPlayerName(playerId);
 						playerName = PlayerUIUtil.toCanonicalName(playerName);
 						if (playerName.startsWith("Player"))
@@ -120,20 +104,23 @@ public class PlayerRankingFragment extends ListFragment implements
 									playerName));
 						}
 						PlayerInfo playerInfo = playerInfoMap.get(playerName);
-						playerInfo.increaseScore(gameAndResult.getPlayerScore(
-								playerName).getOriginalScore());
+						int originalScore = gameAndResult.getPlayerScore(
+								playerId).getOriginalScore();
+						if (holeCount < 18) {
+							playerInfo.increaseScore(originalScore * 2);
+						} else {
+							playerInfo.increaseScore(originalScore);
+						}
 
 						playerGameCountMap.put(playerName, playerGameCount + 1);
 					}
 				}
 			} else {
-				for (GameAndResult gameAndResult : results) {
-					int playerCount = gameAndResult.getGameSetting()
-							.getPlayerCount();
-					PlayerSetting playerSettings = gameAndResult
-							.getPlayerSetting();
+				for (OneGame gameAndResult : resultList) {
+					int holeCount = gameAndResult.getHoleCount();
+					int playerCount = gameAndResult.getPlayerCount();
 					for (int playerId = 0; playerId < playerCount; playerId++) {
-						String playerName = playerSettings
+						String playerName = gameAndResult
 								.getPlayerName(playerId);
 						playerName = PlayerUIUtil.toCanonicalName(playerName);
 						if (playerName.startsWith("Player"))
@@ -144,8 +131,13 @@ public class PlayerRankingFragment extends ListFragment implements
 									playerName));
 						}
 						PlayerInfo playerInfo = playerInfoMap.get(playerName);
-						playerInfo.increaseScore(gameAndResult.getPlayerScore(
-								playerName).getOriginalScore());
+						int originalScore = gameAndResult.getPlayerScore(
+								playerId).getOriginalScore();
+						if (holeCount < 18) {
+							playerInfo.increaseScore(originalScore * 2);
+						} else {
+							playerInfo.increaseScore(originalScore);
+						}
 					}
 				}
 			}
@@ -166,10 +158,6 @@ public class PlayerRankingFragment extends ListFragment implements
 		}
 	}
 
-	@Override
-	public void hideActionMode() {
-	}
-
 	private static class ScoreListViewHolder {
 		View tagView;
 		TagProgressBar attendCountProgressBar;
@@ -177,7 +165,7 @@ public class PlayerRankingFragment extends ListFragment implements
 		TextView playerNameTextView, attendCountTextView;
 	}
 
-	private class PlayerInfoListAdapter extends ArrayAdapter<PlayerInfo>
+	private static class PlayerInfoListAdapter extends ArrayAdapter<PlayerInfo>
 			implements OnClickListener {
 
 		private ScoreListViewHolder holder;
@@ -196,7 +184,7 @@ public class PlayerRankingFragment extends ListFragment implements
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View v = convertView;
 			if (v == null) {
-				LayoutInflater vi = (LayoutInflater) getActivity()
+				LayoutInflater vi = (LayoutInflater) getContext()
 						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				v = vi.inflate(textViewResourceId, null);
 				holder = new ScoreListViewHolder();
@@ -245,7 +233,7 @@ public class PlayerRankingFragment extends ListFragment implements
 			DecimalFormat overParScoreCountFormat = new DecimalFormat("+0.00");
 			DecimalFormat underParScoreCountFormat = new DecimalFormat("0.00");
 
-			String attendText = UIUtil.formatGameCount(getActivity(),
+			String attendText = UIUtil.formatGameCount(getContext(),
 					playerInfo.attend);
 			if (playerInfo.avgOfScore > 0) {
 				holder.attendCountTextView.setText(overParScoreCountFormat

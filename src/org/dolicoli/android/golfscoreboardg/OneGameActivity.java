@@ -9,6 +9,7 @@ import org.dolicoli.android.golfscoreboardg.data.settings.Result;
 import org.dolicoli.android.golfscoreboardg.db.HistoryResultDatabaseWorker;
 import org.dolicoli.android.golfscoreboardg.fragments.DummySectionFragment;
 import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGameActivityPage;
+import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGameFragmentContainer;
 import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGameGameSettingFragment;
 import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGameHoleResultFragment;
 import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGameSummaryFragment;
@@ -33,9 +34,11 @@ import android.view.WindowManager;
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
 import com.actionbarsherlock.view.MenuItem;
+import com.slidingmenu.lib.CustomViewAbove.OnPageChangeListener;
 
-public class OneGameActivity extends Activity implements OnNavigationListener,
-		OnClickListener {
+public class OneGameActivity extends Activity implements
+		OneGameFragmentContainer, OnNavigationListener, OnClickListener,
+		OnPageChangeListener {
 
 	public static final String IK_PLAY_DATE = "PLAY_DATE";
 	public static final String IK_DATE = "DATE";
@@ -66,7 +69,7 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 		setContentView(R.layout.activity_onegame);
 
 		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager(), getIntent());
+				getSupportFragmentManager());
 
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
@@ -144,7 +147,6 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 
 		Hole hole = navigationAdapter.getItem(itemPosition);
 		setHoleNumber(hole.holeNumber);
-		reload(false);
 
 		setUIState();
 
@@ -180,6 +182,15 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 		}
 	}
 
+	@Override
+	public void onPageScrolled(int position, float positionOffest,
+			int positionOffsetPixels) {
+	}
+
+	@Override
+	public void onPageSelected(int position) {
+	}
+
 	private void setUIState() {
 		if (prevButton == null)
 			return;
@@ -204,51 +215,15 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 		});
 	}
 
-	private void setHoleNumber(final int holeNumber) {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				if (mSectionsPagerAdapter == null)
-					return;
-
-				for (int i = 0; i < TAB_COUNT; i++) {
-					OneGameActivityPage fragment = (OneGameActivityPage) mSectionsPagerAdapter
-							.getItem(i);
-					if (fragment != null) {
-						fragment.setHoleNumber(holeNumber);
-					}
-				}
-			}
-		});
-	}
-
-	private void reload(final boolean clean) {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				if (mSectionsPagerAdapter == null)
-					return;
-
-				int count = mSectionsPagerAdapter.getCount();
-				OneGameActivityPage fragment = null;
-				for (int i = 0; i < count; i++) {
-					fragment = (OneGameActivityPage) mSectionsPagerAdapter
-							.getItem(i);
-					if (fragment != null)
-						fragment.reload(clean);
-				}
-			}
-		});
-	}
-
-	private class SectionsPagerAdapter extends FragmentPagerAdapter {
+	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 		OneGameSummaryFragment summaryFragment = new OneGameSummaryFragment();
 		OneGameHoleResultFragment holeResultFragment = new OneGameHoleResultFragment();
 		OneGameGameSettingFragment gameSettingFragment = new OneGameGameSettingFragment();
 
-		public SectionsPagerAdapter(FragmentManager fm, Intent intent) {
+		public SectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
 
+			Intent intent = getIntent();
 			String playDate = intent
 					.getStringExtra(OneGameActivity.IK_PLAY_DATE);
 			Bundle bundle = new Bundle();
@@ -300,6 +275,19 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 		}
 	}
 
+	private void setHoleNumber(int holeNumber) {
+		if (mSectionsPagerAdapter == null)
+			return;
+
+		for (int i = 0; i < TAB_COUNT; i++) {
+			OneGameActivityPage fragment = (OneGameActivityPage) mSectionsPagerAdapter
+					.getItem(i);
+			if (fragment != null) {
+				fragment.setHoleNumber(holeNumber);
+			}
+		}
+	}
+
 	private static class Hole {
 		int holeNumber;
 
@@ -313,5 +301,13 @@ public class OneGameActivity extends Activity implements OnNavigationListener,
 
 			return "Hole " + holeNumber;
 		}
+	}
+
+	@Override
+	public void showModifyGameSettingActivity() {
+	}
+
+	@Override
+	public void reload(boolean clean) {
 	}
 }

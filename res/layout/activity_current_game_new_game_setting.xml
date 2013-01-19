@@ -75,35 +75,40 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/ButtonPanel" >
 
-        <FrameLayout
-            android:id="@+id/GameSettingContent"
+        <fragment
+            android:id="@+id/GameSettingFragment"
+            android:name="org.dolicoli.android.golfscoreboard.fragments.currentgame.NewGameSettingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="visible" />
 
-        <FrameLayout
-            android:id="@+id/HoleFeeSettingContent"
+        <fragment
+            android:id="@+id/HoleFeeSettingFragment"
+            android:name="org.dolicoli.android.golfscoreboard.fragments.currentgame.NewHoleFeeSettingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible" />
+            android:visibility="gone" />
 
-        <FrameLayout
-            android:id="@+id/RankingFeeSettingContent"
+        <fragment
+            android:id="@+id/RankingFeeSettingFragment"
+            android:name="org.dolicoli.android.golfscoreboard.fragments.currentgame.NewRankingFeeSettingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible" />
+            android:visibility="gone" />
 
-        <FrameLayout
-            android:id="@+id/PlayerSettingContent"
+        <fragment
+            android:id="@+id/PlayerSettingFragment"
+            android:name="org.dolicoli.android.golfscoreboard.fragments.currentgame.NewPlayerSettingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible" />
+            android:visibility="gone" />
 
-        <FrameLayout
-            android:id="@+id/HandicapSettingContent"
+        <fragment
+            android:id="@+id/HandicapSettingFragment"
+            android:name="org.dolicoli.android.golfscoreboard.fragments.currentgame.NewHandicapSettingFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible" />
+            android:visibility="gone" />
     </RelativeLayout>
 
 </RelativeLayout>

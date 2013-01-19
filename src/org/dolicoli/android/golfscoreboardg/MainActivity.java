@@ -1,67 +1,71 @@
 package org.dolicoli.android.golfscoreboardg;
 
-import java.util.Locale;
-
-import org.dolicoli.android.golfscoreboardg.data.settings.GameSetting;
-import org.dolicoli.android.golfscoreboardg.db.GameSettingDatabaseWorker;
-import org.dolicoli.android.golfscoreboardg.db.HistoryGameSettingDatabaseWorker;
 import org.dolicoli.android.golfscoreboardg.db.ResultDatabaseWorker;
-import org.dolicoli.android.golfscoreboardg.fragments.DummySectionFragment;
-import org.dolicoli.android.golfscoreboardg.fragments.main.AttendCountFragment;
-import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGameHoleResultFragment;
-import org.dolicoli.android.golfscoreboardg.fragments.onegame.OneGameSummaryFragment;
-import org.dolicoli.android.golfscoreboardg.tasks.ImportCurrentGameTask;
-import org.dolicoli.android.golfscoreboardg.tasks.ImportCurrentGameTask.ImportProgress;
-import org.dolicoli.android.golfscoreboardg.tasks.ImportCurrentGameTask.ImportResult;
-import org.holoeverywhere.app.Activity;
+import org.dolicoli.android.golfscoreboardg.fragments.MenuFragment;
+import org.dolicoli.android.golfscoreboardg.fragments.main.PlayerRankingFragment;
+import org.dolicoli.android.golfscoreboardg.tasks.DownloadTickCheckTask;
+import org.dolicoli.android.golfscoreboardg.tasks.DownloadTickCheckTask.DownloadTickCheckResult;
+import org.dolicoli.android.golfscoreboardg.tasks.ImportAllTask;
+import org.dolicoli.android.golfscoreboardg.tasks.ImportAllTask.ReceiveProgress;
+import org.dolicoli.android.golfscoreboardg.tasks.ImportAllTask.ReceiveResult;
+import org.dolicoli.android.golfscoreboardg.utils.Reloadable;
+import org.dolicoli.android.golfscoreboardg.utils.SlidingFragmentActivity;
 import org.holoeverywhere.app.AlertDialog;
 import org.holoeverywhere.app.Fragment;
-import org.holoeverywhere.app.ProgressDialog;
 import org.holoeverywhere.preference.PreferenceManager;
 import org.holoeverywhere.preference.SharedPreferences;
+import org.holoeverywhere.widget.ProgressBar;
+import org.holoeverywhere.widget.TextView;
 import org.holoeverywhere.widget.Toast;
 
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.WindowManager;
 
+import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.view.MenuItem;
+import com.slidingmenu.lib.SlidingMenu;
 
-public class MainActivity extends Activity implements
-		ImportCurrentGameTask.TaskListener, OnClickListener {
+public class MainActivity extends SlidingFragmentActivity implements
+		ImportAllTask.TaskListener,
+		DownloadTickCheckTask.DownloadTickCheckListener {
 
-	private static final int TAB_CURRENT_GAME_SUMMARY_FRAGMENT = 0;
-	private static final int TAB_CURRENG_GAME_HOLE_RESULT_FRAGMENT = 1;
-	private static final int TAB_ATTEND_COUNT_FRAGMENT = 2;
+	private View downloadView;
+	private ProgressBar progressBar;
+	private TextView progressMessageTextView;
 
-	private static final int TAB_COUNT = TAB_ATTEND_COUNT_FRAGMENT + 1;
+	private Fragment contentFragment;
 
-	private SectionsPagerAdapter mSectionsPagerAdapter;
-	private ViewPager mViewPager;
-
-	private ProgressDialog progressDialog;
+	private boolean init;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		init = false;
+
+		ActionBar actionBar = getSupportActionBar();
+		actionBar.setDisplayHomeAsUpEnabled(true);
+
+		setBehindContentView(R.layout.menu_frame);
+		getSupportFragmentManager().beginTransaction()
+				.replace(R.id.menu_frame, new MenuFragment()).commit();
+
+		// customize the SlidingMenu
+		SlidingMenu sm = getSlidingMenu();
+		sm.setShadowWidthRes(R.dimen.shadow_width);
+		sm.setShadowDrawable(R.drawable.shadow);
+		sm.setBehindOffsetRes(R.dimen.slidingmenu_offset);
+		sm.setFadeDegree(0.35f);
+		sm.setTouchModeAbove(SlidingMenu.TOUCHMODE_FULLSCREEN);
+
 		setContentView(R.layout.activity_main);
 
-		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager());
-
-		mViewPager = (ViewPager) findViewById(R.id.pager);
-		mViewPager.setAdapter(mSectionsPagerAdapter);
-
-		findViewById(R.id.ImportButton).setOnClickListener(this);
-
-		getSupportActionBar().setTitle(R.string.activity_main_title);
+		downloadView = findViewById(R.id.DownloadView);
+		progressBar = (ProgressBar) findViewById(R.id.ProgressBar);
+		progressMessageTextView = (TextView) findViewById(R.id.ProgressTextView);
 
 		SharedPreferences preferences = PreferenceManager
 				.getDefaultSharedPreferences(this);
@@ -77,53 +81,36 @@ public class MainActivity extends Activity implements
 	}
 
 	@Override
-	protected void onPostCreate(Bundle savedInstanceState) {
+	public void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
-		reload(true);
-	}
 
-	@Override
-	public void onClick(View v) {
-		final int id = v.getId();
-		switch (id) {
-		case R.id.ImportButton:
-			importCurentGame();
-			return;
+		SharedPreferences preferences = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		boolean alwaysDownload = preferences.getBoolean(
+				getString(R.string.preference_auto_download_key), true);
+
+		if (alwaysDownload) {
+			DownloadTickCheckTask task = new DownloadTickCheckTask(this, this);
+			task.execute();
+		} else {
+			initialize();
 		}
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case android.R.id.home:
+			toggle();
+			return true;
 		case R.id.Reset:
 			showResetDialog();
-			return true;
-		case R.id.NetShareReceiveData:
-			importData();
-			return true;
-		case R.id.Save:
-			saveHistory();
 			return true;
 		case R.id.Settings:
 			showSettingActivity();
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	private static final int REQ_IMPORT = 0x0004;
-
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		super.onActivityResult(requestCode, resultCode, intent);
-
-		switch (requestCode) {
-		case REQ_IMPORT:
-			if (resultCode == Activity.RESULT_OK) {
-				reload(true);
-			}
-			return;
-		}
 	}
 
 	private void showResetDialog() {
@@ -137,32 +124,13 @@ public class MainActivity extends Activity implements
 							public void onClick(DialogInterface dialog,
 									int which) {
 								resetDatabase();
-								reload(true);
+								if (contentFragment != null
+										&& (contentFragment instanceof Reloadable)) {
+									((Reloadable) contentFragment).reload(true);
+								}
 							}
 
 						}).setNegativeButton(android.R.string.no, null).show();
-	}
-
-	private void importData() {
-		GameSettingDatabaseWorker gameSettingWorker = new GameSettingDatabaseWorker(
-				MainActivity.this);
-		GameSetting gameSetting = new GameSetting();
-		gameSettingWorker.getGameSetting(gameSetting);
-
-		String currentGameId = GameSetting
-				.toGameIdFormat(gameSetting.getDate());
-
-		Intent intent = new Intent(this, NetShareClientActivity.class);
-		intent.putExtra(NetShareClientActivity.IK_GAME_ID, currentGameId);
-		startActivityForResult(intent, REQ_IMPORT);
-	}
-
-	private void saveHistory() {
-		HistoryGameSettingDatabaseWorker worker = new HistoryGameSettingDatabaseWorker(
-				this);
-		worker.addCurrentHistory(true);
-
-		reload(false);
 	}
 
 	private void showSettingActivity() {
@@ -170,163 +138,92 @@ public class MainActivity extends Activity implements
 		startActivity(settingsIntent);
 	}
 
-	@Override
-	public void onImportGameStart() {
-		showProgressDialog(R.string.dialog_import_current_game,
-				R.string.dialog_import_please_wait);
-	}
-
-	@Override
-	public void onImportGameProgressUpdate(ImportProgress progress) {
-		if (progress == null)
-			return;
-
-		int messageId = progress.getMessageId();
-		setProgressDialogStatus(R.string.dialog_import_current_game,
-				R.string.dialog_import_please_wait, progress.getCurrent(),
-				progress.getTotal(), getString(messageId));
-	}
-
-	@Override
-	public void onImportGameFinished(ImportResult result) {
-		if (result.isSuccess()) {
-			if (!result.isCancel()) {
-				Toast.makeText(MainActivity.this,
-						R.string.activity_main_netshare_import_success,
-						Toast.LENGTH_LONG).show();
-				reload(false);
-			}
-		} else {
-			Toast.makeText(MainActivity.this,
-					R.string.activity_main_netshare_import_fail,
-					Toast.LENGTH_LONG).show();
-		}
-		hideProgressDialog();
-	}
-
-	private void reload(final boolean clean) {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				if (mSectionsPagerAdapter == null)
-					return;
-
-				int count = mSectionsPagerAdapter.getCount();
-				Reloadable fragment = null;
-				for (int i = 0; i < count; i++) {
-					fragment = (Reloadable) mSectionsPagerAdapter.getItem(i);
-					if (fragment != null)
-						fragment.reload(clean);
-				}
-			}
-		});
-	}
-
 	private void resetDatabase() {
 		ResultDatabaseWorker resultWorker = new ResultDatabaseWorker(this);
 		resultWorker.reset();
 	}
 
-	private void importCurentGame() {
-		GameSettingDatabaseWorker gameSettingWorker = new GameSettingDatabaseWorker(
-				this);
-		GameSetting gameSetting = new GameSetting();
-		gameSettingWorker.getGameSetting(gameSetting);
-
-		String currentGameId = GameSetting
-				.toGameIdFormat(gameSetting.getDate());
-
-		ImportCurrentGameTask task = new ImportCurrentGameTask(this, this);
-		task.execute(currentGameId);
+	@Override
+	public void onDownloadTickCheckStart() {
+		downloadView.setVisibility(View.VISIBLE);
+		setProgressMessage(true, 100, 0, "최신 데이터를 확인합니다");
 	}
 
-	private void showProgressDialog(int defaultTitleId, int defaultMessageId) {
-		if (progressDialog != null && progressDialog.isShowing()) {
-			return;
+	@Override
+	public void onDownloadTickCheckFinished(DownloadTickCheckResult result) {
+		downloadView.setVisibility(View.GONE);
+		if (!result.isSuccess()) {
+			Toast.makeText(this, R.string.activity_main_netshare_import_fail,
+					Toast.LENGTH_LONG).show();
 		}
 
-		progressDialog = new ProgressDialog(this);
-		progressDialog.setTitle(defaultTitleId);
-		progressDialog.setMessage(getString(defaultMessageId));
-		progressDialog.setIndeterminate(true);
-		progressDialog.setMax(100);
-		progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-		progressDialog.setCancelable(true);
-		progressDialog.show();
-	}
-
-	private void setProgressDialogStatus(int defaultTitleId,
-			int defaultMessageId, final int current, final int total,
-			final String message) {
-		if (progressDialog == null) {
-			showProgressDialog(defaultTitleId, defaultMessageId);
+		if (result.isSuccess() && result.isShouldRefresh()) {
+			ImportAllTask task = new ImportAllTask(this, this);
+			task.execute();
 		} else {
-			if (total <= 0) {
-				progressDialog.setIndeterminate(true);
-			} else {
-				progressDialog.setIndeterminate(false);
-
-				progressDialog.setMax(total);
-				progressDialog.setProgress(current);
-			}
-			progressDialog.setMessage(message);
+			initialize();
 		}
 	}
 
-	private void hideProgressDialog() {
-		if (progressDialog != null) {
-			progressDialog.dismiss();
-			progressDialog = null;
-		}
+	@Override
+	public void onImportAllStart() {
+		downloadView.setVisibility(View.VISIBLE);
 	}
 
-	private class SectionsPagerAdapter extends FragmentPagerAdapter {
-		OneGameSummaryFragment currentGameSummaryFragment = new OneGameSummaryFragment();
-		OneGameHoleResultFragment currentGameHoleResultFragment = new OneGameHoleResultFragment();
-		AttendCountFragment attendCountFragment = new AttendCountFragment();
+	@Override
+	public void onImportAllProgressUpdate(ReceiveProgress progress) {
+		setProgressMessage(false, progress.getTotal(), progress.getCurrent(),
+				progress.getMessage());
+	}
 
-		public SectionsPagerAdapter(FragmentManager fm) {
-			super(fm);
-		}
-
-		@Override
-		public Fragment getItem(int position) {
-			switch (position) {
-			case TAB_CURRENT_GAME_SUMMARY_FRAGMENT:
-				return currentGameSummaryFragment;
-			case TAB_CURRENG_GAME_HOLE_RESULT_FRAGMENT:
-				return currentGameHoleResultFragment;
-			case TAB_ATTEND_COUNT_FRAGMENT:
-				return attendCountFragment;
+	@Override
+	public void onImportAllFinished(ReceiveResult result) {
+		if (result.isSuccess()) {
+			if (!result.isCancel()) {
+				Toast.makeText(this,
+						R.string.activity_main_netshare_import_success,
+						Toast.LENGTH_LONG).show();
 			}
-			Fragment fragment = new DummySectionFragment();
-			Bundle args = new Bundle();
-			args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
-			fragment.setArguments(args);
-			return fragment;
+		} else {
+			Toast.makeText(this, R.string.activity_main_netshare_import_fail,
+					Toast.LENGTH_LONG).show();
 		}
+		downloadView.setVisibility(View.GONE);
+		initialize();
+	}
 
-		@Override
-		public int getCount() {
-			return TAB_COUNT;
-		}
+	public void switchContent(Fragment fragment) {
+		if (!init)
+			return;
+		contentFragment = fragment;
+		getSupportFragmentManager().beginTransaction()
+				.replace(R.id.content_frame, fragment).commit();
+		getSlidingMenu().showContent();
+	}
 
-		@Override
-		public CharSequence getPageTitle(int position) {
-			switch (position) {
-			case TAB_CURRENT_GAME_SUMMARY_FRAGMENT:
-				return getString(
-						R.string.activity_main_fragment_current_game_summary)
-						.toUpperCase(Locale.getDefault());
-			case TAB_CURRENG_GAME_HOLE_RESULT_FRAGMENT:
-				return getString(
-						R.string.activity_main_fragment_current_game_hole_result)
-						.toUpperCase(Locale.getDefault());
-			case TAB_ATTEND_COUNT_FRAGMENT:
-				return getString(R.string.activity_main_fragment_attend_count)
-						.toUpperCase(Locale.getDefault());
-			}
-			return null;
+	private void initialize() {
+		if (init)
+			return;
+
+		init = true;
+		getSupportFragmentManager().beginTransaction()
+				.replace(R.id.content_frame, new PlayerRankingFragment())
+				.commit();
+
+	}
+
+	private void setProgressMessage(boolean indeterminate, final int max,
+			final int current, final String message) {
+		if (progressBar == null || progressMessageTextView == null)
+			return;
+
+		if (indeterminate) {
+			progressBar.setIndeterminate(true);
+		} else {
+			progressBar.setIndeterminate(false);
+			progressBar.setMax(max);
+			progressBar.setProgress(current);
 		}
+		progressMessageTextView.setText(message);
 	}
 }

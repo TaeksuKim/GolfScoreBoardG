@@ -4,8 +4,6 @@ import java.util.HashMap;
 
 import org.dolicoli.android.golfscoreboardg.R;
 
-import android.content.Context;
-
 public class Ecco1Calculator implements HandicapCalculator {
 
 	private static final int AVG_COUNT_THRESHOLD = 7;
@@ -17,7 +15,7 @@ public class Ecco1Calculator implements HandicapCalculator {
 	private HashMap<String, PlayerScore> playerScoreMap;
 
 	@Override
-	public String getName(Context context) {
+	public String getName(ResourceContainer context) {
 		if (context == null)
 			return "";
 		return context.getString(R.string.ecco1_calculator_name);
