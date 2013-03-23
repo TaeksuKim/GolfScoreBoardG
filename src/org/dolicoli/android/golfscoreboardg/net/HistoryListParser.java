@@ -67,7 +67,7 @@ public class HistoryListParser extends ResponseParser {
 						}
 
 						String tickString = xpp.getAttributeValue(null, "tick");
-						if (tickString != null && !tickString.isEmpty()) {
+						if (tickString != null && !tickString.equals("")) {
 							try {
 								tick = Long.parseLong(tickString);
 							} catch (Throwable t) {
